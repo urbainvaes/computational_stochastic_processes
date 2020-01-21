@@ -1,6 +1,8 @@
 # Example codes in computational stochastic processes
 
-This repository contains all the example codes presented in course *MATH97016/MATH97094: Computational Stochastic Processes* in Spring 2020.
+This repository contains all the example codes presented in course *MATH97016/MATH97094: Computational Stochastic Processes*,
+in Spring 2020 at Imperial College London.
+
 The Jupyter notebooks, in both `.ipynb` and `.html` formats, 
 can be generated from the *Python* files by running `make` in the repository.
 In order for this to work,
@@ -18,5 +20,5 @@ pip install --user jupytext
 ## Contributing
 
 If you feel like you can contribute by providing suggestions,
-introducing additional examples, or correcting errors and bugs,
-feel free to an *issue* or a *pull request*.
+introducing additional examples, or reporting errors and bugs,
+feel free to open an *issue* or a *pull request*.
