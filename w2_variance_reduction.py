@@ -388,3 +388,57 @@ print(np.mean(fxy), np.var(fxy))
 # Variance reduction by conditioning
 gx = g(x[0])
 print(np.mean(gx), np.var(gx))
+# -
+
+# # A more interesting example of importance sampling
+# Assume that $\{Z_i\}_{i=1}^N$ are indepedent $\mathcal N(0, \sigma^2)$ random
+# define
+# $$
+# S_k = s_0 + \sum_{i=1}^k Z_k, \qquad k = 1, \dotsc, N.
+# $$
+# You may think of $S_k$ as, for example, the money left in the pocket of an
+# average poker players after $k$ games, and of $s_0 > 0$ as the money
+# initially available. If $s_0$ is sufficiently high relatively to $\sigma$,
+# then the probability of ruin, given by
+# $$
+# I = \mathbb P \left(\min_{i = 1, \dotsc, N} (S_k) \leq 0 \right),
+# $$
+# is very small, so the relative accuracy of regular Monte Carlo simulation
+# will not be very good.
+#
+# Now we will view $S := (S_1, \dotsc, S_N)$ as an $\mathbb R^N$-valued
+# random variable. If we denote by $A$ the nonegative orthant $R^N_{\geq 0}$,
+# then clearly $ I = 1 - \mathbb E(I_{A}(S))$. The PDF of $S$ is given by
+# $$
+# \pi(s_1, \dotsc, s_N) = \frac{1}{\sqrt{2\pi\sigma^2}} \, \e^{-\frac{1}{2\sigma^2} \, ( (s_1 - S_0)^2 + (s_2 - s_1)^2 + \dotsb + (s_N - s_{N-1})^2 )}.
+# $$
+# In order to better estimate, we will change the dynamics by adding a
+# negative drift term. More precisely, we will use as our important
+# distribution the PDF of the $\mathbb R^N$-valued random variable V obtained
+# by
+# $$
+# V_k = s_0 - \sum_{i=1}^k b_i - \sum_{i=1}^k Z_i, \qquad k = 1, \dotsc, N,
+# $$
+# for deterministic $b_i$ (the drift) that we still need to choose.
+# The associated PDF is given by:
+# $$
+# \psi(v_1, \dotsc, v_N) =  \frac{1}{\sqrt{2\pi\sigma^2}} \, \e^{-\frac{1}{2\sigma^2} \, ( (v_1 - v_0 + b_1)^2 + (v_2 - v_1 + b_2)^2 + \dotsb + (v_N - v_{N-1} + b_N)^2 )}., \qquad k = 1, \dotsc, N,
+# $$
+# The likelihood ratio can be calculated explicitly:
+# $$
+# g(x) = \frac{\pi(x)}{\psi(x)} = \exp \left( \frac{1}{\sigma^2} \left( \sum_{i=1}^N b_i (x_i - x_{i-1}) - \frac{1}{2} \sum_{i=1}^N b_i^2 \right) \right).
+# $$
+# Now we can employ importance sampling.
+# For simplicity, we will set $b_i = b$ (independent of $i$).
+
+# Function to integrate before importance sampling
+
+s0, sigma, N, b = 1, .1, 10, -.1
+
+# Target function to integrate
+def f(x):
+    return (np.min(x, axis=0) > 0)*1.
+
+# Likelihood ratio
+def g(x):
+    return np.exp((1/sigma**2)*(b*(x[-1] - s0) - b**2*N/2)
