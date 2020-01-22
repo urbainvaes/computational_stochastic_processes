@@ -59,8 +59,8 @@ np.random.seed(0)
 # A standard choice of antithetic variable when $X_i \sim U(0, 1)$ is $X_i^a = 1 - X_i$.
 # But whether this choices leads to a reduction in the variance or not depends on the function $f$.
 # Below we consider the choices $f = x + e^x$ and $f = |x - .5|$ and
-# we estimate $C_n \textrm{var} \hat I_n$ as well as $C_n \textrm{var} \hat I_n^a$,
-# where $C$ represents the number function evaluations required.
+# we calculate $C_n \textrm{var} \hat I_n$ as well as $C_n \textrm{var} \hat I_n^a$,
+# where $C_n$ is the number function evaluations required for the computation of each estimator.
 
 # +
 f1 = lambda x: x + np.exp(x)
@@ -69,11 +69,12 @@ f2 = lambda x: np.abs(x - .5)
 # Number of samples
 n = 10**6
 
-# Estimation of the normalized variance without variance reduction
+# Estimation of the "variance times function evaluations" (which is constant
+# with the number of function evaluations) without variance reduction
 u = np.random.rand(n)
 var_no_reduction = np.var(f1(u))
 
-# Estimation of the variance with antithetic variables
+# Estimation of the variance with antithetic variables.
 # We include a factor 2 because each iteration requires 2 function evaluations.
 u_a = 1 - u
 var_antithetic = 2 * np.var((f1(u) + f1(u_a))/2)
@@ -136,7 +137,7 @@ print(np.var(evaluations_no_reduction), 2 * np.var(evaluations_antithetic))
 # $$
 # I = \int_0^1 e^x + \sum_{i = 1}^n \alpha_i (h_i(x) - m_i) \, \mathrm{d} x,
 # $$
-# so we can estimate it by applying the Monte Carlo method to $e^x + \sum_i \alpha_i (h_i(x) - m_i)$,
+# so we can estimate $I$ by applying the regular Monte Carlo method to $g(x) = e^x + \sum_i \alpha_i (h_i(x) - m_i)$,
 # but how do we choose $\alpha_i$ to obtain the best variance reduction?
 
 # +
@@ -164,13 +165,14 @@ print(np.var(fu), np.var(gu), np.var(gu5))
 # $$
 # M_{ij} = \textrm{cov}(h_i(U), h_j(U)) = \int_0^1 x^{i + j} \, \mathrm d x- m_i \, m_j = \frac{1}{i + j + 1} - \frac{1}{(i + 1)(j + 1)}.
 # $$
-# Note that we are ``cheating'' here, because we are using the value of $I$ in order to determine the optimal coefficients.
+# Note that we are "cheating" here, because we are using the value of $I$ in order to determine the optimal coefficients.
 # To calculate $F_i$, we use the recurrence formula
 # $$
 # \int e^x \, x^{i} \, \mathrm d x = e^x \, x^i - i \int e^x \, x^{i - 1} \, \mathrm d x
 # $$
-# Below we neglect, in our computation of our "normalized variance" the
-# computational associated with the evaluation of the cnotrol variates.
+# Below we neglect, in our computation of the "variance times function
+# evaluations", the computational cost associated with the evaluation of the
+# cnotrol variates.
 
 # +
 def h(x, n=2):
@@ -196,7 +198,8 @@ print(np.var(h(u)), np.var(h(u, n=5)))
 
 # This approaches generalizes naturally to several dimensions.
 # Let $C$ denote the circle and $B = \{x, y: |x| + |y| ≤ \sqrt{2}\}$.
-# Here we will estimate the optimal coefficient numerically.
+# Here we will employ the control variate $I_B(x, y)$ and estimate the optimal
+# coefficient numerically.
 
 # +
 def f_B(x):
@@ -219,11 +222,16 @@ print(np.var(f_circle(u)), np.var(h(u)))
 # -
 
 # # Importance sampling
-
 # ## Exponential Tilting
 # Assume that we want to calculate $\mathbb P(X > x_0)$ for some large $x-0$,
-# and where $X \sim \mathcal N(\mu, \sigma)$. A common choice in this case (see
-# lecture notes) is to choose $\psi(x) = \mathcal N(\mu + t \sigma^2, \sigma^2)$.
+# and that $X \sim \mathcal N(\mu, \sigma)$. A common choice in this case (see
+# lecture notes) is to choose
+# $$
+# \newcommand{\e}{\mathrm{e}}
+# \newcommand{\d}{\mathrm{d}}
+# \psi(x) = \frac{\pi(x) \, \e^{tx}}{\int_{-\infty}^{\infty} \pi(x) \, \e^{tx} \, \d x },
+# $$
+# which is exactly the density of $\mathcal N(\mu + t \sigma^2, \sigma^2)$.
 
 # +
 # Parameters
@@ -253,14 +261,19 @@ print(exact, np.mean(fx), np.mean(fy*gy))
 print(np.cov(fx), np.cov(fy*gy))
 # -
 
-# ## Sampling for the bimodal distribution
+# ## Integrating a bimodal function
 # Here we assume that we want to calculate the integral
 # $$
 # \int_{\infty}^{\infty} e^{-\beta \, V(x)} \, \gamma(x) \, \mathrm d x,
 # $$
 # where $\gamma$ is the PDF of $\mathcal N(0, \sigma^2)$ and $V$ is a bistable potential
 # $$
-# V(x) = \frac 14 (x^2 - a^2)^2
+# V(x) = \frac 14 (x^2 - a^2)^2.
+# $$
+# To this end, we will use importance sampling with an importance distribution
+# given by a Gaussian mixture
+# $$
+# \psi(x) = \lambda \, g_{\mu_1,\sigma_1^2}(x) + (1 - \lambda) \, g_{\mu_2, \sigma_2^2}(x), \qquad 0 \leq \lambda \leq 1.
 # $$
 
 # +
@@ -287,7 +300,7 @@ integral = scipy.integrate.quad(lambda x: f(x)*pi(x), - infinity, infinity)
 print("The exact value of the integral is {}, \nwith absolute error less than {}".
       format(integral[0], integral[1]))
 
-# Calculate the variance (per n) using usual MC simulation
+# Calculate the variance (times n) using usual MC simulation
 n = 10**6
 x = sigma * np.random.randn(n)
 fx = f(x)
@@ -346,3 +359,32 @@ h = lambda y: f(y)*pi(y)/psi(y)
 hy = h(y)
 print(np.mean(hy), np.var(hy))
 # -
+
+# # Variance reduction by conditioning
+#
+# In practice, this technique often amounts to calculating some integrals in a
+# multiple integral analytically, and to use regular Monte Carlo on the
+# integrand of the result. Consider the problem of calculating
+# $$
+# I = \int_0^1 \int_0^1 e^{-x^3} (y + 1) + \ln(1 + x^2) \, y^2 \, \d y \, \d x.
+# $$
+# For fixed $x$, the integrand is polynomial in $y$, so we can easily calculate
+# the inner integral analytically.
+# $$
+# I = \int_0^1 \frac{3}{2} \, e^{-x^3} + \frac{1}{3} \ln(1 + x^2) \, \d x.
+# $$
+
+# +
+f = lambda x, y: np.exp(-x**3) * (y + 1) + np.log(1 + x**2) * y**2
+g = lambda x: (3/2) * np.exp(-x**3) + (1/3) * np.log(1 + x**2)
+
+n = 10**6
+x = np.random.rand(2, n)
+
+# Regular Monte Carlo
+fxy = f(x[0], x[1])
+print(np.mean(fxy), np.var(fxy))
+
+# Variance reduction by conditioning
+gx = g(x[0])
+print(np.mean(gx), np.var(gx))
