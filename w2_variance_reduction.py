@@ -451,9 +451,9 @@ def g(x):
 # $m_n = \frac{1}{n} \sum_{i=1}^n x_i$ and $q_n = \frac{1}{n} \sum_{i=1}^n x_i^2$,
 # it holds that
 # $$
-# m_{n+1} = \frac{1}{n+1} (n \, m_n + X_{n+1}), \qquad q_{n+1} = \frac{1}{n+1} (n \, q_n + X_{n+1}^2).
+# m_{n+1} = \frac{1}{n+1} (n \, m_n + x_{n+1}), \qquad q_{n+1} = \frac{1}{n+1} (n \, q_n + x_{n+1}^2).
 # $$
-# Note also that we below we calculate the sample variance using an unbiased
+# Note also that below we calculate the sample variance using an unbiased
 # estimator, which is reflected by the presence of the factor $n/(n - 1)$.
 # Without this, our estimator of the variance would be not unbiased but only
 # asymptotically unbiased. However, since here we are interested more in the
@@ -485,6 +485,10 @@ print(mn, mn_is)
 var_no_reduction = n/(n - 1) * (qn - mn**2)
 var_is = n/(n - 1) * (qn_is - mn_is**2)
 print(var_no_reduction, var_is)
+# Notice that, without variance reduction, the mean and variance calculated are
+# very close. This is because the variance of a Bernoulli random variable of
+# mean p is equal to p(1-p).
+
 # -
 
 # +
