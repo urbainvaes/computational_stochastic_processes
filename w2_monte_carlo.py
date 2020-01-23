@@ -168,7 +168,7 @@ plt.show()
 # $$
 # B_n = \sum_{i = 1}^N \textrm{var}(Z_i), \qquad \Phi_n(x) = \mathbb P \left( \frac{1}{\sqrt{B_n}} \sum_{i=1}^N Z_i \leq x \right)
 # $$
-# If the random variables $\{Z_i\}_{i \in \mathbb N}$
+# If the random variables $\{Z_i\}_{i \in \mathbb N}$ are identically distributed,
 # the statement takes a simpler form:
 # $$
 # \forall x \in \mathbb R \qquad |\Phi_n(x) - \Phi(x)| \leq \frac{A \, N}{(\sqrt{N} \, \sigma)^{2+\gamma} \, (1 + |x|)^{2 + \gamma}} \, \mathbb E (|Z_1|^{2+\gamma}).
