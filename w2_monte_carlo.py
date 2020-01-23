@@ -178,7 +178,7 @@ plt.show()
 # we deduce
 # $$
 # \mathbb P\left(\left|\frac{\hat I_n - I}{\sigma/\sqrt{n}} \right| \leq a \right) = \Phi_n(a) - \Phi_n(-a)
-# \geq \Phi(a) - \Phi(-a) - \frac{2}{N^{1/2} \, \sigma^3 \, (1 + |a|)^{3}} \, \mathbb E (|Z_1|^{3}).
+# \geq \Phi(a) - \Phi(-a) - \frac{2}{\sqrt{n} \, \sigma^3 \, (1 + |a|)^{3}} \, \mathbb E (|Z_1|^{3}).
 # $$
 
 # ## Comparison of the bounds obtained with Chebyshev's inequality and the CLT
