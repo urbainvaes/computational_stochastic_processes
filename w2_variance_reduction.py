@@ -391,15 +391,15 @@ print(np.mean(gx), np.var(gx))
 # -
 
 # # A more interesting example of importance sampling
-# Assume that $\{Z_i\}_{i=1}^N$ are indepedent $\mathcal N(0, \sigma^2)$ random
+# Assume that $\{Z_i\}_{i=1}^N$ are indepedent $\mathcal N(0, \sigma^2)$ random variables and
 # define
 # $$
 # S_k = s_0 + \sum_{i=1}^k Z_k, \qquad k = 1, \dotsc, N.
 # $$
 # You may think of $S_k$ as, for example, the money left in the pocket of an
-# average poker players after $k$ games, and of $s_0 > 0$ as the money
-# initially available. If $s_0$ is sufficiently high relatively to $\sigma$,
-# then the probability of ruin, given by
+# poker player after $k$ games, and of $s_0 > 0$ as the money initially
+# available to the player. If $s_0$ is sufficiently high relatively to $\sigma$,
+# then the probability of ruin within the first $N$ games, given by
 # $$
 # I = \mathbb P \left(\min_{i = 1, \dotsc, N} (S_k) \leq 0 \right),
 # $$
@@ -407,12 +407,12 @@ print(np.mean(gx), np.var(gx))
 # will not be very good.
 #
 # Now we will view $S := (S_1, \dotsc, S_N)$ as an $\mathbb R^N$-valued
-# random variable. If we denote by $A$ the nonegative orthant $R^N_{\geq 0}$,
+# random variable. If we denote by $A$ the nonegative orthant $\mathbb R^N_{\geq 0}$,
 # then clearly $ I = 1 - \mathbb E(I_{A}(S))$. The PDF of $S$ is given by
 # $$
-# \pi(s_1, \dotsc, s_N) = \frac{1}{\sqrt{2\pi\sigma^2}} \, \e^{-\frac{1}{2\sigma^2} \, ( (s_1 - S_0)^2 + (s_2 - s_1)^2 + \dotsb + (s_N - s_{N-1})^2 )}.
+# \pi(s_1, \dotsc, s_N) = \frac{1}{\sqrt{2\pi\sigma^2}} \, \e^{-\frac{1}{2\sigma^2} \, ( (s_1 - s_0)^2 + (s_2 - s_1)^2 + \dotsb + (s_N - s_{N-1})^2 )}.
 # $$
-# In order to better estimate, we will change the dynamics by adding a
+# In order to better estimate $I$, we will change the dynamics by adding a
 # negative drift term. More precisely, we will use as our important
 # distribution the PDF of the $\mathbb R^N$-valued random variable V obtained
 # by
@@ -426,19 +426,79 @@ print(np.mean(gx), np.var(gx))
 # $$
 # The likelihood ratio can be calculated explicitly:
 # $$
-# g(x) = \frac{\pi(x)}{\psi(x)} = \exp \left( \frac{1}{\sigma^2} \left( \sum_{i=1}^N b_i (x_i - x_{i-1}) - \frac{1}{2} \sum_{i=1}^N b_i^2 \right) \right).
+# g(x) = \frac{\pi(x)}{\psi(x)} = \exp \left( - \frac{1}{\sigma^2} \left( \sum_{i=1}^N b_i (x_i - x_{i-1}) - \frac{1}{2} \sum_{i=1}^N b_i^2 \right) \right).
 # $$
 # Now we can employ importance sampling.
 # For simplicity, we will set $b_i = b$ (independent of $i$).
 
-# Function to integrate before importance sampling
-
+# +
 s0, sigma, N, b = 1, .1, 10, -.1
 
 # Target function to integrate
 def f(x):
-    return (np.min(x, axis=0) > 0)*1.
+    return (np.min(x, axis=0) <= 0)*1.
 
 # Likelihood ratio
 def g(x):
-    return np.exp((1/sigma**2)*(b*(x[-1] - s0) - b**2*N/2)
+    return np.exp(-(1/sigma**2)*(b*(x[-1] - s0) - b**2*N/2))
+
+# -
+# We will use regular Monte Carlo and importance sampling in order to
+# approximate the probability of ruin. To avoid running out of RAM, but also
+# just for the sake of illustration, we'll do updates of the mean and of the
+# variance on the fly. These updates are based on the observation that, for
+# numbers $\{x_i\}_{i\in \mathbb N}$ and with the notations
+# $m_n = \frac{1}{n} \sum_{i=1}^n x_i$ and $q_n = \frac{1}{n} \sum_{i=1}^n x_i^2$,
+# it holds that
+# $$
+# m_{n+1} = \frac{1}{n+1} (n \, m_n + X_{n+1}), \qquad q_{n+1} = \frac{1}{n+1} (n \, q_n + X_{n+1}^2).
+# $$
+# Note also that we below we calculate the sample variance using an unbiased
+# estimator, which is reflected by the presence of the factor $n/(n - 1)$.
+# Without this, our estimator of the variance would be not unbiased but only
+# asymptotically unbiased. However, since here we are interested more in the
+# order of magnitude of the variance than in its precise value, both estimators
+# are perfectly suitable. See [the wikipedia page on sample variance](https://en.wikipedia.org/wiki/Variance#Sample_variance) if you would like more information.
+
+# +
+n_per_slice, n_slices = 10**6, 10
+n = n_per_slice * n_slices
+mn, qn = 0, 0
+mn_is, qn_is = 0, 0
+for i in range(n_slices):
+    # x = samples from the nominal distribution
+    # y = samples from the importance distribution
+    x = sigma * np.random.randn(N, n_per_slice)
+    y = x + b
+    x = s0 + np.cumsum(x, axis=0)
+    y = s0 + np.cumsum(y, axis=0)
+    fx, fy, gy = f(x), f(y), g(y)
+    mn = 1/(i+1) * (mn*i + np.mean(fx))
+    qn = 1/(i+1) * (qn*i + np.mean(fx**2))
+    mn_is = 1/(i+1) * (mn_is*i + np.mean(fy*gy))
+    qn_is = 1/(i+1) * (qn_is*i + np.mean((fy*gy)**2))
+
+# Print the probability of ruin as calculated with each method
+print(mn, mn_is)
+
+# Calculate variance (times n) for both methods
+var_no_reduction = n/(n - 1) * (qn - mn**2)
+var_is = n/(n - 1) * (qn_is - mn_is**2)
+print(var_no_reduction, var_is)
+# -
+
+# +
+# Plot a few trajectories of the unmodified and modified dynamics. In other
+# words, plot samples from pi and psi.
+n_samples = 20
+x0 = np.zeros(n_samples) + s0
+trajectories = np.vstack((x0, x[:, :n_samples]))
+trajectories_is = np.vstack((x0, y[:, :n_samples]))
+fig, ax = plt.subplots(1, 2)
+ax[0].plot(np.arange(N + 1), trajectories, marker='.')
+ax[1].plot(np.arange(N + 1), trajectories_is, marker='.')
+ax[0].plot(np.arange(N + 1), np.zeros(N + 1), linestyle='--', color='k')
+ax[1].plot(np.arange(N + 1), np.zeros(N + 1), linestyle='--', color='k')
+ax[0].set_title("Samples from $\pi(\cdot)$")
+ax[1].set_title("Samples from $\psi(\cdot)$")
+plt.show()
