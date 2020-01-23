@@ -27,7 +27,7 @@ import scipy.stats as stats
 # Configure matplotlib (for plots)
 matplotlib.rc('font', size=20)
 matplotlib.rc('font', family='serif')
-matplotlib.rc('text', usetex=True)
+matplotlib.rc('text', usetex=False)
 matplotlib.rc('figure', figsize=(14, 8))
 matplotlib.rc('lines', linewidth=4)
 matplotlib.rc('lines', marker='.')

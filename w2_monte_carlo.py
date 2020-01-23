@@ -26,7 +26,7 @@ import matplotlib.pyplot as plt
 
 matplotlib.rc('font', size=20)
 matplotlib.rc('font', family='serif')
-matplotlib.rc('text', usetex=True)
+matplotlib.rc('text', usetex=False)
 matplotlib.rc('figure', figsize=(14, 8))
 matplotlib.rc('lines', linewidth=2)
 
@@ -189,7 +189,7 @@ alphas = np.linspace(.01, .2, 100)
 ax.plot(alphas, 1/np.sqrt(alphas),
         label="$1/\\sqrt{{\\alpha}}$")
 ax.plot(alphas, np.sqrt(2)*scipy.special.erfinv(1 - alphas),
-        label="$\sqrt{2} \\, \\textrm{{erf}}^{{-1}}(1 - \\alpha)$")
+        label="$\sqrt{2} \\, erf^{{-1}}(1 - \\alpha)$")
 ax.legend()
 ax.set_xlabel('$\\alpha$')
 plt.show()

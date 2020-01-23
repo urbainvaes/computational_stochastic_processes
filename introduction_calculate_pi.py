@@ -33,7 +33,7 @@ print(4*sum(in_circle)/n)
 # Configure matplotlib (for plots)
 matplotlib.rc('font', size=20)
 matplotlib.rc('font', family='serif')
-matplotlib.rc('text', usetex=True)
+matplotlib.rc('text', usetex=False)
 matplotlib.rc('figure', figsize=(8, 8))
 
 # Generate points on a circle

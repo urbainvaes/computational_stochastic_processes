@@ -26,7 +26,7 @@ import matplotlib.pyplot as plt
 # Configure matplotlib (for plots)
 matplotlib.rc('font', size=20)
 matplotlib.rc('font', family='serif')
-matplotlib.rc('text', usetex=True)
+matplotlib.rc('text', usetex=False)
 matplotlib.rc('figure', figsize=(14, 8))
 matplotlib.rc('lines', linewidth=4)
 
@@ -53,7 +53,7 @@ def lcg(n, x0, M=2**32, a=22695477, c=1):
     a : integer
         The multiplier
     c : integer
-        The increment   
+        The increment
 
     Returns
     -------
@@ -117,7 +117,7 @@ plt.show()
 # $$
 # F_N(x) = \frac{1}{N} \sum_{i=1}^N I_{(-\infty, x]}(X_i)
 # $$
-# where $I_{(-\infty, x]}$ is the indicator function of the interval $(-\infty, x]$. 
+# where $I_{(-\infty, x]}$ is the indicator function of the interval $(-\infty, x]$.
 # By the law of large numbers, for all $x$ it holds that
 # $$
 # F_N(x) = \frac{1}{N} \sum_{i=1}^N I_{(-\infty, x]}(X_i) \xrightarrow{\text{a.s. as }N \to \infty} \mathbb E(I_{(-\infty, x]}(X_i)) = \mathbb P(X_i \leq x) = F(x) := \max(0, \min(1, x)),
@@ -150,7 +150,7 @@ ax[1].set_title("Difference between empirical and exact CDFs")
 plt.show()
 # -
 
-# Now let us calculate the sup norm of the difference between the empirical CDF, 
+# Now let us calculate the sup norm of the difference between the empirical CDF,
 # based on the data in `x`, and the exact CDF of the uniform distribution.
 error_sup = max(np.max(abs(cdf - x)), np.max(abs(cdf_shifted - x)))
 normalized_statistic = np.sqrt(len(x)) * error_sup
