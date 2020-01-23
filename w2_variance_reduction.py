@@ -32,7 +32,6 @@ matplotlib.rc('font', family='serif')
 matplotlib.rc('text', usetex=False)
 matplotlib.rc('figure', figsize=(14, 8))
 matplotlib.rc('lines', linewidth=2)
-print(matplotlib.get_backend())
 
 # Fix the seed
 np.random.seed(0)
