@@ -507,3 +507,5 @@ ax[1].plot(np.arange(N + 1), np.zeros(N + 1), linestyle='--', color='k')
 ax[0].set_title("Samples from $\pi(\cdot)$")
 ax[1].set_title("Samples from $\psi(\cdot)$")
 plt.show()
+
+# test
