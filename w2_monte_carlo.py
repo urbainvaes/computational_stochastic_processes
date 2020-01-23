@@ -171,7 +171,7 @@ plt.show()
 # If the random variables $\{Z_i\}_{i \in \mathbb N}$ are identically distributed,
 # the statement takes a simpler form:
 # $$
-# \forall x \in \mathbb R \qquad |\Phi_n(x) - \Phi(x)| \leq \frac{A \, N}{(\sqrt{N} \, \sigma)^{2+\gamma} \, (1 + |x|)^{2 + \gamma}} \, \mathbb E (|Z_1|^{2+\gamma}).
+# \forall x \in \mathbb R \qquad |\Phi_n(x) - \Phi(x)| \leq \frac{A \, n}{(\sqrt{n} \, \sigma)^{2+\gamma} \, (1 + |x|)^{2 + \gamma}} \, \mathbb E (|Z_1|^{2+\gamma}).
 # $$
 # Using this theorem with $\gamma = 1$ and $A = 1$,
 # and denoting by $\Phi_n$ the CDF of $\frac{\sqrt{N}}{\sigma}(\hat I_n - I)$,
