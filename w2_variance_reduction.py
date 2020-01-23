@@ -41,6 +41,8 @@ np.random.seed(0)
 #
 # With this method, the estimator reads
 # $$
+# \newcommand{\e}{\mathrm{e}}
+# \newcommand{\d}{\mathrm{d}}
 # \hat I_n^a = \frac{1}{2n} \sum_{i = 1}^n (f(X_i) + f(X_i^a)).
 # $$
 # A necessary condition for this estimator to be unbiased is that $\mathbb
@@ -88,11 +90,11 @@ var_no_reduction = np.var(f2(u))
 var_antithetic = 2 * np.var((f2(u) + f2(u_a))/2)
 print(var_no_reduction, var_antithetic)
 
-# The normalized variance of our antithetic estimator is now twice as large as
+# The variance (times the number of function evaluations) of our antithetic estimator is now twice as large as
 # that of the unmodified estimator! See if you can understand why?
 #
 # In general, a sufficient condition under which this approach, based on the
-# antithetic variable $X_i^a = 1 - X^i$, leads to a reduction of the variance
+# antithetic variable $X_i^a = 1 - X_i$, leads to a reduction of the variance
 # is that **$f(x)$ is a monotonic function**, because the sign of the
 # covariance is preserved under monotonic functions.
 #
@@ -120,7 +122,7 @@ evaluations_no_reduction = f_circle(u)
 evaluations_antithetic = (f_circle(u) + f_circle(u_a))/2
 print(np.mean(evaluations_no_reduction), np.mean(evaluations_antithetic))
 print(np.var(evaluations_no_reduction), 2 * np.var(evaluations_antithetic))
-# Bad! (See why there a factor two here?)
+# Bad! (See why there is a factor two here?)
 
 # -
 # # Control variates
@@ -221,14 +223,42 @@ print(np.mean(f_circle(u)), np.mean(h(u)))
 print(np.var(f_circle(u)), np.var(h(u)))
 # -
 
+# # Variance reduction by conditioning
+#
+# In practice, this technique often amounts to calculating some integrals in a
+# multiple integral analytically, and to use regular Monte Carlo on the
+# integrand of the result. Consider the problem of calculating
+# $$
+# I = \int_0^1 \int_0^1 e^{-x^3} (y + 1) + \ln(1 + x^2) \, y^2 \, \d y \, \d x.
+# $$
+# For fixed $x$, the integrand is polynomial in $y$, so we can easily calculate
+# the inner integral analytically.
+# $$
+# I = \int_0^1 \frac{3}{2} \, e^{-x^3} + \frac{1}{3} \ln(1 + x^2) \, \d x.
+# $$
+
+# +
+f = lambda x, y: np.exp(-x**3) * (y + 1) + np.log(1 + x**2) * y**2
+g = lambda x: (3/2) * np.exp(-x**3) + (1/3) * np.log(1 + x**2)
+
+n = 10**6
+x = np.random.rand(2, n)
+
+# Regular Monte Carlo
+fxy = f(x[0], x[1])
+print(np.mean(fxy), np.var(fxy))
+
+# Variance reduction by conditioning
+gx = g(x[0])
+print(np.mean(gx), np.var(gx))
+# -
+
 # # Importance sampling
 # ## Exponential Tilting
 # Assume that we want to calculate $\mathbb P(X > x_0)$ for some large $x-0$,
 # and that $X \sim \mathcal N(\mu, \sigma)$. A common choice in this case (see
 # lecture notes) is to choose
 # $$
-# \newcommand{\e}{\mathrm{e}}
-# \newcommand{\d}{\mathrm{d}}
 # \psi(x) = \frac{\pi(x) \, \e^{tx}}{\int_{-\infty}^{\infty} \pi(x) \, \e^{tx} \, \d x },
 # $$
 # which is exactly the density of $\mathcal N(\mu + t \sigma^2, \sigma^2)$.
@@ -358,36 +388,6 @@ y = (-1 + 2*(u > .5))*a + s*x
 h = lambda y: f(y)*pi(y)/psi(y)
 hy = h(y)
 print(np.mean(hy), np.var(hy))
-# -
-
-# # Variance reduction by conditioning
-#
-# In practice, this technique often amounts to calculating some integrals in a
-# multiple integral analytically, and to use regular Monte Carlo on the
-# integrand of the result. Consider the problem of calculating
-# $$
-# I = \int_0^1 \int_0^1 e^{-x^3} (y + 1) + \ln(1 + x^2) \, y^2 \, \d y \, \d x.
-# $$
-# For fixed $x$, the integrand is polynomial in $y$, so we can easily calculate
-# the inner integral analytically.
-# $$
-# I = \int_0^1 \frac{3}{2} \, e^{-x^3} + \frac{1}{3} \ln(1 + x^2) \, \d x.
-# $$
-
-# +
-f = lambda x, y: np.exp(-x**3) * (y + 1) + np.log(1 + x**2) * y**2
-g = lambda x: (3/2) * np.exp(-x**3) + (1/3) * np.log(1 + x**2)
-
-n = 10**6
-x = np.random.rand(2, n)
-
-# Regular Monte Carlo
-fxy = f(x[0], x[1])
-print(np.mean(fxy), np.var(fxy))
-
-# Variance reduction by conditioning
-gx = g(x[0])
-print(np.mean(gx), np.var(gx))
 # -
 
 # # A more interesting example of importance sampling
