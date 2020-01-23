@@ -26,12 +26,13 @@ import scipy.integrate
 import matplotlib
 import matplotlib.pyplot as plt
 
+# +
 matplotlib.rc('font', size=20)
 matplotlib.rc('font', family='serif')
 matplotlib.rc('text', usetex=False)
 matplotlib.rc('figure', figsize=(14, 8))
 matplotlib.rc('lines', linewidth=2)
-matplotlib.rc('figure', dpi=300)
+print(matplotlib.get_backend())
 
 # Fix the seed
 np.random.seed(0)
@@ -500,10 +501,12 @@ x0 = np.zeros(n_samples) + s0
 trajectories = np.vstack((x0, x[:, :n_samples]))
 trajectories_is = np.vstack((x0, y[:, :n_samples]))
 fig, ax = plt.subplots(1, 2)
+plt.axes([0, 0, 2, 2])
 ax[0].plot(np.arange(N + 1), trajectories, marker='.')
 ax[1].plot(np.arange(N + 1), trajectories_is, marker='.')
 ax[0].plot(np.arange(N + 1), np.zeros(N + 1), linestyle='--', color='k')
 ax[1].plot(np.arange(N + 1), np.zeros(N + 1), linestyle='--', color='k')
 ax[0].set_title("Samples from $\pi(\cdot)$")
 ax[1].set_title("Samples from $\psi(\cdot)$")
+print(matplotlib.rcParams)
 plt.show()

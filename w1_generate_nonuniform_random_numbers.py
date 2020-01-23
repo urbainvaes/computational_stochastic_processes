@@ -24,6 +24,7 @@ import matplotlib.pyplot as plt
 import scipy.linalg as la
 import scipy.stats as stats
 
+# +
 # Configure matplotlib (for plots)
 matplotlib.rc('font', size=20)
 matplotlib.rc('font', family='serif')

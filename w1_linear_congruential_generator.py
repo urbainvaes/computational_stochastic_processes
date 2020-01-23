@@ -23,7 +23,10 @@ import scipy.stats as stats
 import matplotlib
 import matplotlib.pyplot as plt
 
+# +
 # Configure matplotlib (for plots)
+# In older versions of matplotlib, this needs to appear in a different cell as
+# the import of pyplot: https://github.com/ipython/ipython/issues/11098
 matplotlib.rc('font', size=20)
 matplotlib.rc('font', family='serif')
 matplotlib.rc('text', usetex=False)

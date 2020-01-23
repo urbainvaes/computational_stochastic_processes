@@ -24,6 +24,7 @@ import scipy.optimize
 import matplotlib
 import matplotlib.pyplot as plt
 
+# +
 matplotlib.rc('font', size=20)
 matplotlib.rc('font', family='serif')
 matplotlib.rc('text', usetex=False)
