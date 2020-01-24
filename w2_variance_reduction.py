@@ -337,7 +337,7 @@ x = sigma * np.random.randn(n)
 fx = f(x)
 
 # We'll choose psi to be the "sum" of two gaussians
-s = 1
+s = .5
 g1, g2 = gaussian(-a, s), gaussian(a, s)
 psi = lambda x: (1/2)*g1(x) + (1/2)*g2(x)
 
@@ -364,8 +364,10 @@ h = lambda y: f(y)*pi(y)/psi(y)
 
 # Check that y has the correct distribution
 fig, ax = plt.subplots()
-ax.hist(y, bins=30, density=True)
-ax.plot(x_plot, h(x_plot))
+ax.hist(y, bins=30, density=True, label=r"Approximation of $\psi(x)$")
+ax.plot(x_plot, h(x_plot), label=r"$f(x) \, \pi(x) / \psi(x)$")
+ax.set_xlabel('$x$')
+ax.legend()
 plt.show()
 hy = h(y)
 # -
@@ -507,5 +509,3 @@ ax[1].plot(np.arange(N + 1), np.zeros(N + 1), linestyle='--', color='k')
 ax[0].set_title("Samples from $\pi(\cdot)$")
 ax[1].set_title("Samples from $\psi(\cdot)$")
 plt.show()
-
-# test
