@@ -397,35 +397,35 @@ print(np.mean(hy), np.var(hy))
 # Assume that $\{Z_i\}_{i=1}^N$ are indepedent $\mathcal N(0, \sigma^2)$ random variables and
 # define
 # $$
-# S_k = s_0 + \sum_{i=1}^k Z_k, \qquad k = 1, \dotsc, N.
+# S_k = s_0 + \sum_{i=1}^k Z_i, \qquad k = 1, \dotsc, N.
 # $$
 # You may think of $S_k$ as, for example, the money left in the pocket of an
 # poker player after $k$ games, and of $s_0 > 0$ as the money initially
 # available to the player. If $s_0$ is sufficiently high relatively to $\sigma$,
 # then the probability of ruin within the first $N$ games, given by
 # $$
-# I = \mathbb P \left(\min_{i = 1, \dotsc, N} (S_k) \leq 0 \right),
+# I = \mathbb P \left(\min_{k = 1, \dotsc, N} (S_k) \leq 0 \right),
 # $$
 # is very small, so the relative accuracy of regular Monte Carlo simulation
 # will not be very good.
 #
-# Now we will view $S := (S_1, \dotsc, S_N)$ as an $\mathbb R^N$-valued
-# random variable. If we denote by $A$ the nonegative orthant $\mathbb R^N_{\geq 0}$,
+# If we view $S := (S_1, \dotsc, S_N)$ as an $\mathbb R^N$-valued
+# random variable and denote by $A$ the non-negative orthant $\mathbb R^N_{\geq 0}$,
 # then clearly $ I = 1 - \mathbb E(I_{A}(S))$. The PDF of $S$ is given by
 # $$
-# \pi(s_1, \dotsc, s_N) = \frac{1}{\sqrt{2\pi\sigma^2}} \, \e^{-\frac{1}{2\sigma^2} \, ( (s_1 - s_0)^2 + (s_2 - s_1)^2 + \dotsb + (s_N - s_{N-1})^2 )}.
+# \pi(s_1, \dotsc, s_N) = \frac{1}{\sqrt{2\pi\sigma^2}} \, \exp \left(-\frac{1}{2\sigma^2} \, \left( (s_1 - s_0)^2 + (s_2 - s_1)^2 + \dotsb + (s_N - s_{N-1})^2 \right) \right).
 # $$
 # In order to better estimate $I$, we will change the dynamics by adding a
 # negative drift term. More precisely, we will use as our important
 # distribution the PDF of the $\mathbb R^N$-valued random variable V obtained
 # by
 # $$
-# V_k = s_0 - \sum_{i=1}^k b_i - \sum_{i=1}^k Z_i, \qquad k = 1, \dotsc, N,
+# V_k = s_0 + \sum_{i=1}^k b_i + \sum_{i=1}^k Z_i, \qquad k = 1, \dotsc, N,
 # $$
 # for deterministic $b_i$ (the drift) that we still need to choose.
 # The associated PDF is given by:
 # $$
-# \psi(v_1, \dotsc, v_N) =  \frac{1}{\sqrt{2\pi\sigma^2}} \, \e^{-\frac{1}{2\sigma^2} \, ( (v_1 - v_0 + b_1)^2 + (v_2 - v_1 + b_2)^2 + \dotsb + (v_N - v_{N-1} + b_N)^2 )}., \qquad k = 1, \dotsc, N,
+# \psi(v_1, \dotsc, v_N) =  \frac{1}{\sqrt{2\pi\sigma^2}} \, \exp \left(-\frac{1}{2\sigma^2} \, \left( (v_1 - v_0 - b_1)^2 + (v_2 - v_1 - b_2)^2 + \dotsb + (v_N - v_{N-1} - b_N)^2 \right) \right).
 # $$
 # The likelihood ratio can be calculated explicitly:
 # $$
@@ -458,10 +458,10 @@ def g(x):
 # $$
 # Note also that below we calculate the sample variance using an unbiased
 # estimator, which is reflected by the presence of the factor $n/(n - 1)$.
-# Without this, our estimator of the variance would be not unbiased but only
-# asymptotically unbiased. However, since here we are interested more in the
+# Without this, our estimator of the variance would be biased (but
+# asymptotically unbiased). However, since here we are interested more in the
 # order of magnitude of the variance than in its precise value, both estimators
-# are perfectly suitable. See [the wikipedia page on sample variance](https://en.wikipedia.org/wiki/Variance#Sample_variance) if you would like more information.
+# are perfectly suitable. See [the wikipedia page on sample variance](https://en.wikipedia.org/wiki/Variance#Sample_variance) for more information.
 
 # +
 n_per_slice, n_slices = 10**6, 10
