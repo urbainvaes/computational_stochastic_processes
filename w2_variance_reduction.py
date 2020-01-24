@@ -292,6 +292,27 @@ print(exact, np.mean(fx), np.mean(fy*gy))
 print(np.cov(fx), np.cov(fy*gy))
 # -
 
+# +
+def gaussian(mu, sigma):
+    return lambda x: 1/np.sqrt(2*np.pi*sigma**2)*np.exp(-(x - mu)**2/(2*sigma**2))
+
+fig, ax = plt.subplots(2, 1)
+x_plot = np.linspace(0, 6, 200)
+ax[0].plot(x_plot, f(x_plot), label="$f(x)$")
+ax[0].plot(x_plot, gaussian(mu, sigma)(x_plot), label=r"$\pi(x)$")
+ax[1].plot(x_plot, gaussian(mu + t*sigma**2, sigma)(x_plot),
+           label=r"$\psi(x)$")
+ax[1].plot(x_plot, f(x_plot)*g(x_plot),
+           label=r"$f(x) \, \frac{\pi(x)}{\psi(x)}$")
+ax[0].legend()
+ax[1].legend()
+ax[0].set_xlabel("$x$")
+ax[1].set_xlabel("$x$")
+ax[0].set_title("Nominal distribution and 'norminal integrand'")
+ax[1].set_title("Importance distribution and 'importance integrand'")
+plt.show()
+# -
+
 # ## Integrating a bimodal function
 # Here we assume that we want to calculate the integral
 # $$
