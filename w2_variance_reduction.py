@@ -99,7 +99,7 @@ print(var_no_reduction, var_antithetic)
 # is that **$f(x)$ is a monotonic function**, because the sign of the
 # covariance is preserved under monotonic functions.
 #
-# This approaches generalizes naturally to several dimensions.
+# This approach generalizes naturally to several dimensions.
 
 # +
 def f_circle(x):
