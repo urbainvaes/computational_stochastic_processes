@@ -446,11 +446,11 @@ print(np.mean(hy), np.var(hy))
 # for deterministic $b_i$ (the drift) that we still need to choose.
 # The associated PDF is given by:
 # $$
-# \psi(v_1, \dotsc, v_N) =  \frac{1}{\sqrt{2\pi\sigma^2}} \, \exp \left(-\frac{1}{2\sigma^2} \, \left( (v_1 - v_0 - b_1)^2 + (v_2 - v_1 - b_2)^2 + \dotsb + (v_N - v_{N-1} - b_N)^2 \right) \right).
+# \psi(v_1, \dotsc, v_N) =  \frac{1}{\sqrt{2\pi\sigma^2}} \, \exp \left(-\frac{1}{2\sigma^2} \, \left( (v_1 - s_0 - b_1)^2 + (v_2 - v_1 - b_2)^2 + \dotsb + (v_N - v_{N-1} - b_N)^2 \right) \right).
 # $$
 # The likelihood ratio can be calculated explicitly:
 # $$
-# g(x) = \frac{\pi(x)}{\psi(x)} = \exp \left( - \frac{1}{\sigma^2} \left( \sum_{i=1}^N b_i (x_i - x_{i-1}) - \frac{1}{2} \sum_{i=1}^N b_i^2 \right) \right).
+# g(x) = \frac{\pi(x)}{\psi(x)} = \exp \left( - \frac{1}{\sigma^2} \left( \sum_{i=1}^N b_i (x_i - x_{i-1}) - \frac{1}{2} \sum_{i=1}^N b_i^2 \right) \right), \qquad \text{with } x_0 = s_0.
 # $$
 # Now we can employ importance sampling.
 # For simplicity, we will set $b_i = b$ (independent of $i$).
