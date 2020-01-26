@@ -61,7 +61,7 @@ matplotlib.rc('figure.subplot', hspace=.4)
 
 # +
 # Set the final time, number of time steps, and number of replicas.
-T, n, m = 2, 100, 50
+T, n, m = 10, 100, 50
 
 # Define the parameters for the OU process
 theta, mu, sigma, x0 = 3, -1, .2, 1
@@ -227,7 +227,7 @@ plt.show()
 # Then solutions are of the form $\phi_n = \sinh (\alpha_n t)$,
 # and substituting in the second boundary condition, we find that the $\alpha_n$ satisfy:
 # $$
-# \tanh(\alpha_n) = - \frac{\theta}{\alpha_n}.
+# \tanh(\alpha_n \, T) = - \frac{\theta}{\alpha_n}.
 # $$
 # Since both sides are even functions of $\alpha_n$,
 # and since the hyperbolic tangent is always positive when $\alpha_n > 0$,
@@ -235,34 +235,29 @@ plt.show()
 # Solutions must therefore be of the type $\phi_n = \sin (\alpha_n t)$,
 # where $\alpha_n$ solves:
 # $$
-# \tan(\alpha_n) = - \frac{\theta}{\alpha_n}.
+# \tan(\alpha_n \, T) = - \frac{\theta}{\alpha_n}.
 # $$
 # In order to solve this equation, we must resort to numerical simulation.
 
 # +
 # Calculate the roots numerically
 n_roots = 200
-r0 = np.pi * np.arange(1, n_roots + 1)
-roots = scipy.optimize.root(lambda a: np.tan(a) + theta/a, r0).x
+r0 = (np.pi/T) * np.arange(1, n_roots + 1)
+roots = scipy.optimize.root(lambda a: np.tan(a*T) + theta/a, r0).x
 
 # Plot the roots
 periods = 10
-alpha = np.linspace(- np.pi/2 + .05, np.pi/2 - .05, 100)
+alpha_range = (1/T)*np.linspace(- np.pi/2 + .05, np.pi/2 - .05, 100)
 fig, ax = plt.subplots()
 for i in range(periods):
-    # Note: it is easy to check that there are no solutions over the interval [0, \pi/2]
-    alpha_0 = (i + 1)*np.pi
-    ax.plot(alpha_0 + alpha, np.tan(alpha),
-            alpha_0 + alpha, -theta/(alpha_0 + alpha),
-            color='k')
+    alpha = (i + 1)*(np.pi/T) + alpha_range
     if i == 0:
-        ax.plot(alpha_0 + alpha, np.tan(alpha), label=r"$\tan(\alpha)$", color='b')
-        ax.plot(alpha_0 + alpha, - theta/(alpha_0 + alpha),
-               label=r"$-\theta/\alpha$", color='r')
+        ax.plot(alpha, np.tan(alpha*T), label=r"$\tan(\alpha \, T)$", color='b')
+        ax.plot(alpha, - theta/(alpha), label=r"$-\theta/\alpha$", color='r')
     else:
-        ax.plot(alpha_0 + alpha, np.tan(alpha), color='b')
-        ax.plot(alpha_0 + alpha, - theta/(alpha_0 + alpha), color='r')
-    ax.plot(roots[i], np.tan(roots[i]), marker='.', color='g')
+        ax.plot(alpha, np.tan(alpha*T), color='b')
+        ax.plot(alpha, - theta/(alpha), color='r')
+    ax.plot(roots[i], np.tan(roots[i]*T), marker='.', color='g')
     ax.legend()
 plt.show()
 # -
@@ -273,6 +268,7 @@ normalizations = (T/2 - np.sin(2*T*roots)/(4*roots))**(-1/2)
 lambdas = sigma**2 / (theta**2 + roots**2)
 
 # Simulated OU process
+m = 5000
 x = mu + (x0 - mu)*np.exp(-theta*t)
 for alpha, lam, norm in zip(roots, lambdas, normalizations):
     increment = np.sqrt(lam) * np.sin(alpha*t) * norm
