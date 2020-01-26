@@ -64,7 +64,7 @@ matplotlib.rc('figure.subplot', hspace=.4)
 T, n, m = 2, 100, 50
 
 # Define the parameters for the OU process
-theta, mu, sigma, x0 = 3, -1, .1, 1
+theta, mu, sigma, x0 = 3, -1, .2, 1
 
 s = np.linspace(0, T, n)
 t = np.linspace(0, T, n)
@@ -225,22 +225,23 @@ plt.show()
 # $$
 # Let us assume first that $\alpha_n^2 = \theta^2 - \frac{\sigma^2}{\lambda_n}$ is positive.
 # Then solutions are of the form $\phi_n = \sinh (\alpha_n t)$,
-# and substituting in the second boundary condition, we find:
+# and substituting in the second boundary condition, we find that the $\alpha_n$ satisfy:
 # $$
 # \tanh(\alpha_n) = - \frac{\theta}{\alpha_n}.
 # $$
-# Since the hyperbolic tangent is always positive and $\theta$ is negative,
-# this equation does not admit a solution.
+# Since both sides are even functions of $\alpha_n$,
+# and since the hyperbolic tangent is always positive when $\alpha_n > 0$,
+# we deduce that this equation does not admit a solution.
 # Solutions must therefore be of the type $\phi_n = \sin (\alpha_n t)$,
 # where $\alpha_n$ solves:
 # $$
-# \tan(\alpha_n) = \frac{\theta}{\alpha_n}.
+# \tan(\alpha_n) = - \frac{\theta}{\alpha_n}.
 # $$
 # In order to solve this equation, we must resort to numerical simulation.
 
 # +
 # Calculate the roots numerically
-n_roots = 50
+n_roots = 200
 r0 = np.pi * np.arange(1, n_roots + 1)
 roots = scipy.optimize.root(lambda a: np.tan(a) + theta/a, r0).x
 
@@ -264,12 +265,27 @@ for i in range(periods):
     ax.plot(roots[i], np.tan(roots[i]), marker='.', color='g')
     ax.legend()
 plt.show()
+# -
 
+# +
 # Calculate normalization constants
-normalizations = (1/roots - np.cos(roots*T)/roots)**(-1/2)
-lambdas = sigma**2 / (theta**2 + alpha**2)
+normalizations = (T/2 - np.sin(2*T*roots)/(4*roots))**(-1/2)
+lambdas = sigma**2 / (theta**2 + roots**2)
 
 # Simulated OU process
 x = mu + (x0 - mu)*np.exp(-theta*t)
-for i in range(periods):
-    x += 
+for alpha, lam, norm in zip(roots, lambdas, normalizations):
+    increment = np.sqrt(lam) * np.sin(alpha*t) * norm
+    x = x + np.tensordot(increment, np.random.randn(m), axes=0).T
+
+fig, ax = plt.subplots()
+ax.plot(t, x.T)
+plt.show()
+# -
+
+# +
+# Check that the empirical covariance matches the expected one
+fig, ax = plt.subplots()
+ax.plot(t, np.var(x, axis=0))
+ax.plot(t, covariance_functions['Ornstein-Uhlenbeck'](t, t))
+plt.show()
