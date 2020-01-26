@@ -61,7 +61,7 @@ matplotlib.rc('figure.subplot', hspace=.4)
 
 # +
 # Set the final time, number of time steps, and number of replicas.
-T, n, m = 10, 100, 50
+T, n, m = 2, 100, 50
 
 # Define the parameters for the OU process
 theta, mu, sigma, x0 = 3, -1, .2, 1
@@ -227,7 +227,7 @@ plt.show()
 # Then solutions are of the form $\phi_n = \sinh (\alpha_n t)$,
 # and substituting in the second boundary condition, we find that the $\alpha_n$ satisfy:
 # $$
-# \tanh(\alpha_n \, T) = - \frac{\theta}{\alpha_n}.
+# \tanh(\alpha_n \, T) = - \frac{\alpha_n}{\theta}.
 # $$
 # Since both sides are even functions of $\alpha_n$,
 # and since the hyperbolic tangent is always positive when $\alpha_n > 0$,
@@ -235,15 +235,17 @@ plt.show()
 # Solutions must therefore be of the type $\phi_n = \sin (\alpha_n t)$,
 # where $\alpha_n$ solves:
 # $$
-# \tan(\alpha_n \, T) = - \frac{\theta}{\alpha_n}.
+# \tan(\alpha_n \, T) = - \frac{\alpha_n}{\theta}.
 # $$
 # In order to solve this equation, we must resort to numerical simulation.
 
 # +
 # Calculate the roots numerically
-n_roots = 200
-r0 = (np.pi/T) * np.arange(1, n_roots + 1)
-roots = scipy.optimize.root(lambda a: np.tan(a*T) + theta/a, r0).x
+n_roots, roots = 100, []
+for i in range(1, n_roots + 1):
+    fun = lambda a: a*T + np.arctan(a/theta) - i*np.pi
+    roots.append(scipy.optimize.root(fun, 0).x[0])
+roots = np.array(roots)
 
 # Plot the roots
 periods = 10
@@ -253,11 +255,12 @@ for i in range(periods):
     alpha = (i + 1)*(np.pi/T) + alpha_range
     if i == 0:
         ax.plot(alpha, np.tan(alpha*T), label=r"$\tan(\alpha \, T)$", color='b')
-        ax.plot(alpha, - theta/(alpha), label=r"$-\theta/\alpha$", color='r')
+        ax.plot(alpha, - alpha/theta, label=r"$-a/\theta$", color='r')
     else:
         ax.plot(alpha, np.tan(alpha*T), color='b')
-        ax.plot(alpha, - theta/(alpha), color='r')
-    ax.plot(roots[i], np.tan(roots[i]*T), marker='.', color='g')
+        ax.plot(alpha, - alpha/theta, color='r')
+    ax.plot(roots[i], np.tan(roots[i]*T), marker='.', 
+            markersize=15, color='g')
     ax.legend()
 plt.show()
 # -
@@ -268,13 +271,15 @@ normalizations = (T/2 - np.sin(2*T*roots)/(4*roots))**(-1/2)
 lambdas = sigma**2 / (theta**2 + roots**2)
 
 # Simulated OU process
-m = 5000
-x = mu + (x0 - mu)*np.exp(-theta*t)
-for alpha, lam, norm in zip(roots, lambdas, normalizations):
-    increment = np.sqrt(lam) * np.sin(alpha*t) * norm
-    x = x + np.tensordot(increment, np.random.randn(m), axes=0).T
+def karhunen_loeve_ou(m):
+    x = mu + (x0 - mu)*np.exp(-theta*t)
+    for alpha, lam, norm in zip(roots, lambdas, normalizations):
+        increment = np.sqrt(lam) * np.sin(alpha*t) * norm
+        x = x + np.tensordot(increment, np.random.randn(m), axes=0).T
+    return x
 
 fig, ax = plt.subplots()
+x = karhunen_loeve_ou(50)
 ax.plot(t, x.T)
 plt.show()
 # -
@@ -282,6 +287,7 @@ plt.show()
 # +
 # Check that the empirical covariance matches the expected one
 fig, ax = plt.subplots()
+x = karhunen_loeve_ou(50000)
 ax.plot(t, np.var(x, axis=0))
 ax.plot(t, covariance_functions['Ornstein-Uhlenbeck'](t, t))
 plt.show()
