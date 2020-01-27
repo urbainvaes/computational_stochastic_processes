@@ -35,8 +35,8 @@ matplotlib.rc('figure.subplot', hspace=.4)
 # -
 
 # # Simulation of Gaussian processes
-# In this section, we will explore two different techniques for the simulation
-# of Gaussian processes. The two techniques will be illustrated on a few
+# In this section, we will explore different techniques for the simulation
+# of Gaussian processes. The techniques will be illustrated on a few
 # examples: Brownian motion,
 # [Brownian bridge](https://en.wikipedia.org/wiki/Brownian_bridge),
 # [Fractional Brownian motion](https://en.wikipedia.org/wiki/Fractional_Brownian_motion),
@@ -46,6 +46,7 @@ matplotlib.rc('figure.subplot', hspace=.4)
 # \newcommand{\d}{\mathrm d}
 # \newcommand{\e}{\mathrm e}
 # \newcommand{\cov}{\mathrm{cov}}
+# \newcommand{\var}{\mathrm{var}}
 # \d x_t = \theta (\mu -  x_t) \, \d t + \sigma \, \d W_t.
 # $$
 # When starting at a deterministic initial value $x_0$,
@@ -140,6 +141,76 @@ for i, process in enumerate(covariance_functions):
 plt.show()
 # -
 
+# ## Simulation of Gaussian Markovian processes
+# If $X_t$ is a Gaussian Markovian process, then one needs only $X_{t_n}$ in
+# order to simulate $X_{t_{n+1}}$. We recall from the lecture notes that if $X = (X_1, X_2)^T \sim \mathcal N(m, \Sigma)$,
+# then the conditional distribution of $X_2$ conditional on $X_1$ is a normal  with
+# $$
+# \begin{aligned}
+# & \mathbb E(X_2 | X_1) = m_2 + \Sigma_{21} \Sigma_{11}^{-1} (X_1 - m_1), \\
+# & \var(X_2 | X_1) = \Sigma_{22} - \Sigma_{21} \Sigma_{11}^{-1} \Sigma_{12}.
+# \end{aligned}
+# $$
+# In the case of Brownian motion, letting $X_2 = W_t$ and $X_1 = W_s$ with $s \leq t$,
+# these formulae imply
+# $$
+# \begin{aligned}
+# &\mathbb E(W_t | W_s) = W_s, \\
+# &\var(W_t | W_s) = t - s.
+# \end{aligned}
+# $$
+# (Of course, we also know this from the properties of Brownian motion.)
+# To simulate Brownian paths, we can therefore employ the update formula
+# $$
+# W_{t_{n+1}} = W_{t_n} + \sqrt{t_{n+1} - t_n} \, Z_{n+1},
+# $$
+# where $Z_{n + 1} \sim \mathcal N(0, 1)$.
+# In other words, the $n$-dimensional vector
+# $W = (W_1, \dots, W_N)$ defined by
+# $$
+# W_{i} = Z_1 + \sum_{k=2}^i  \sqrt{t_{k+1} - t_k} \, Z_k, \qquad i = 1, \dotsc, N,
+# $$
+# where $Z_i \sim \mathcal N(0, 1)$ are independent increments,
+# is equal in law to a Brownian motion discretized at the time points.
+# Below we apply the same technique to simulate the OU process.
+# $$
+# \begin{aligned}
+# X_{t_{n+1}}
+# &= m_{t_{n+1}} + \Sigma_{21} \Sigma_{11}^{-1} (X_{t_n} - m_{t_n}) + \sqrt{\Sigma_{22} - \Sigma_{21} \Sigma_{11}^{-1} \Sigma_{12}} \, Z_{n+1}, \qquad \Sigma = C(t_n, t_{n+1}), \\
+# &=: A_{n+1} + B_{n+1} \, X_{t_n} + C_{n+1} \, Z_{n+1}
+# \end{aligned}
+# $$
+
+# +
+# Generate m x n normally distributed increments (the Z_i above)
+z = np.random.randn(m, n)
+
+Sigma_12 = covariance_functions['Ornstein-Uhlenbeck'](t[:-1], t[1:])
+Sigma_11 = covariance_functions['Ornstein-Uhlenbeck'](t[:-1], t[:-1])
+Sigma_22 = covariance_functions['Ornstein-Uhlenbeck'](t[1:], t[1:])
+m1 = mean_functions['Ornstein-Uhlenbeck'](t[:-1])
+m2 = mean_functions['Ornstein-Uhlenbeck'](t[1:])
+
+# Since the initial condition is deterministic, we must treat the first entry
+# differently from the other, because Sigma_11[0] = 0.
+A, B, C = np.zeros(n - 1), np.zeros(n - 1), np.zeros(n - 1)
+A[0], B[0], C[0] = 1, 0, np.sqrt(Sigma_22[0])
+A[1:] = m2[1:] - (Sigma_12[1:]/Sigma_11[1:])*m1[1:]
+B[1:] = (Sigma_12[1:]/Sigma_11[1:])
+C[1:] = np.sqrt(Sigma_22[1:] - Sigma_12[1:]**2/Sigma_11[1:])
+
+x = np.zeros((m, n))
+x[:, 0] = x[:, 0] + x0
+for i in range(n - 1):
+    x[:, i+1] = A[i] + B[i]*x[:, i] + C[i]*z[:, i]
+
+fig, ax = plt.subplots(1, 1)
+ax.plot(t, x.T)
+ax.set_xlabel('$t$')
+plt.show()
+# -
+
+
 # ## Simulation by transformation from Brownian motion
 
 # With this technique, we exploit the fact that
@@ -153,15 +224,6 @@ plt.show()
 # are a Brownian bridge and a (strictly and weakly) stationary
 # Orstein-Uhlenbeck process, respectively.
 # These two processes can therefore be simulated by transforming Brownian paths.
-# To simulate these Brownian paths, we will employ a different method from the
-# one used above, one that relies on the observation that if $\{t_i\}_{i=1}^n$
-# denote discrete increasing time points, then the $n$-dimensional vector
-# $W = (W_1, \dots, W_N)$ defined by
-# $$
-# W_{i} = Z_1 + \sum_{k=2}^i  \sqrt{t_{k+1} - t_k} \, Z_k, \qquad i = 1, \dotsc, N,
-# $$
-# where $Z_i \sim \mathcal N(0, 1)$ are independent increments,
-# is equal in law to a Brownian motion discretized at the time points.
 
 # +
 # Generate m x n normally distributed increments (the Z_i above)
@@ -259,7 +321,7 @@ for i in range(periods):
     else:
         ax.plot(alpha, np.tan(alpha*T), color='b')
         ax.plot(alpha, - alpha/theta, color='r')
-    ax.plot(roots[i], np.tan(roots[i]*T), marker='.', 
+    ax.plot(roots[i], np.tan(roots[i]*T), marker='.',
             markersize=15, color='g')
     ax.legend()
 plt.show()
@@ -281,6 +343,7 @@ def karhunen_loeve_ou(m):
 fig, ax = plt.subplots()
 x = karhunen_loeve_ou(50)
 ax.plot(t, x.T)
+ax.set_xlabel('$t$')
 plt.show()
 # -
 
@@ -288,6 +351,9 @@ plt.show()
 # Check that the empirical covariance matches the expected one
 fig, ax = plt.subplots()
 x = karhunen_loeve_ou(50000)
-ax.plot(t, np.var(x, axis=0))
-ax.plot(t, covariance_functions['Ornstein-Uhlenbeck'](t, t))
+ax.plot(t, np.var(x, axis=0), label="Empirical variance")
+ax.set_xlabel('$t$')
+ax.plot(t, covariance_functions['Ornstein-Uhlenbeck'](t, t),
+        label="Exact variance $C(t, t)$")
+ax.legend()
 plt.show()
