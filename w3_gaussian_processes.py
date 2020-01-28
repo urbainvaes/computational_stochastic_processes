@@ -143,8 +143,10 @@ plt.show()
 
 # ## Simulation of Gaussian Markovian processes
 # If $X_t$ is a Gaussian Markovian process, then one needs only $X_{t_n}$ in
-# order to simulate $X_{t_{n+1}}$. We recall from the lecture notes that if $X = (X_1, X_2)^T \sim \mathcal N(m, \Sigma)$,
-# then the conditional distribution of $X_2$ conditional on $X_1$ is a normal  with
+# order to simulate $X_{t_{n+1}}$, so we can simulate Gaussian processes using
+# an iterative procedure. We recall from the lecture notes that if $X = (X_1,
+# X_2)^T \sim \mathcal N(m, \Sigma)$, then the conditional distribution of
+# $X_2$ conditional on $X_1$ is a normal  with
 # $$
 # \begin{aligned}
 # & \mathbb E(X_2 | X_1) = m_2 + \Sigma_{21} \Sigma_{11}^{-1} (X_1 - m_1), \\
