@@ -89,7 +89,7 @@ covariance_functions = {
     }
 
 # Mean of the processes (if not zero)
-mean_functions = {'Ornstein-Uhlenbeck': lambda t, theta=1, mu=-1, sigma=1, x0=1:
+mean_functions = {'Ornstein-Uhlenbeck': lambda t:
         mu + (x0 - mu) * np.exp(-theta*t)}
 # -
 
