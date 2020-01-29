@@ -7,11 +7,11 @@ all : $(HTML_OUTPUTS) $(IPYNB_OUTPUTS)
 
 %.ipynb : %.py $(CSS)
 	# jupytext --to 'notebook' $^
-	~/.local/bin/jupytext --to 'notebook' $^
+	~/.local/bin/jupytext --to 'notebook' $<
 	JUPYTER_CONFIG_DIR=.jupyter jupyter nbconvert --execute --to 'notebook' --inplace $@
 
 %.html : %.ipynb $(CSS)
-	JUPYTER_CONFIG_DIR=.jupyter jupyter nbconvert --to html $^
+	JUPYTER_CONFIG_DIR=.jupyter jupyter nbconvert --to html $<
 
 clean :
 	rm $(IPYNB_OUTPUTS) $(HTML_OUTPUTS)
