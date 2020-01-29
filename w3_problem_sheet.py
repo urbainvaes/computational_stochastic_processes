@@ -90,20 +90,19 @@ def print_confidence(m, v):
     # or 'manually'...
     # a = np.sqrt(2)*scipy.special.erfinv(.95)
     print("95% confidence interval for the probability of ruin: "
-          "[{0:0.6f} - {1:0.2e}, {0:0.6f} + {2:0.2e}]"
-          .format(m, a*np.sqrt(v), - a*np.sqrt(v)))
+          "[{0:0.6f} - {1:0.2e}, {0:0.6f} + {1:0.2e}]"
+          .format(m, a*np.sqrt(v)))
 
+n = 10**6
 
 # Without importance sampling
-n_not_precise = 10**6
-mean, var = gamblers_ruin(b_fun=lambda x: 0, n=n_not_precise)
-print_confidence(mean, var/n_not_precise)
+mean, var = gamblers_ruin(b_fun=lambda x: 0, n=n)
+print_confidence(mean, var/n)
 
 # With basic importance sampling
-mean, var = gamblers_ruin(b_fun=lambda x: 0*x + b, n=n_not_precise)
-print_confidence(mean, var/n_not_precise)
+mean_is, var = gamblers_ruin(b_fun=lambda x: 0*x + b, n=n)
+print_confidence(mean, var/n)
 
 # With improved importance sampling
-n_precise = 10**7
-mean, var = gamblers_ruin(b_fun=lambda x: (x > 0)*b, n=n_precise)
-print_confidence(mean, var/n_precise)
+mean_im, var = gamblers_ruin(b_fun=lambda x: (x > 0)*b, n=n)
+print_confidence(mean_im, var/n)

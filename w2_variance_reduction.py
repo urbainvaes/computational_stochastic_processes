@@ -416,7 +416,7 @@ print(np.mean(hy), np.var(hy))
 # -
 
 # # A more interesting example of importance sampling
-# Assume that $\{Z_i\}_{i=1}^N$ are indepedent $\mathcal N(0, \sigma^2)$ random variables and
+# Assume that $\{Z_i\}_{i=1}^N$ are independent $\mathcal N(0, \sigma^2)$ random variables and
 # define
 # $$
 # S_k = s_0 + \sum_{i=1}^k Z_i, \qquad k = 1, \dotsc, N.
