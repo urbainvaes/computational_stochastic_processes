@@ -18,7 +18,7 @@
 #
 # This work is licensed under the terms of the MIT license.
 # For a copy, see <https://opensource.org/licenses/MIT>.
-import math
+import time
 import numpy as np
 import numpy.linalg as la
 import scipy.special
@@ -59,6 +59,79 @@ pmf = [sum(x == i)/n for i in range(1, len(probs) + 1)]
 
 print(pmf)
 # -
+# # Sampling from $\text{Gamma}(k, \lambda)$
+
+gamma = scipy.special.gamma
+
+
+def rand_gamma_int(lam, k, n):
+    u = np.random.rand(k, n)
+    return (-1/lam)*np.sum(np.log(u), axis=0)
+
+def rand_cauchy(n):
+    u = np.random.rand(n)
+    return np.tan(np.pi*(u - .5))
+
+def gamma_pdf(x, lam, k):
+    positive, x = x > 0, np.abs(x)
+    return positive * ((lam**k)*x**(k-1)*np.exp(-lam*x) / gamma(k))
+
+def cauchy_pdf(x):
+    return 1/(np.pi*(1 + x**2))
+
+def timeit(fun):
+    def fun_with_timer(*args, **kwargs):
+        t0 = time.time()
+        result = fun(*args, **kwargs)
+        t1 = time.time()
+        print("Time elapsed in {}: {}".format(fun.__name__, t1 - t0))
+        return result
+    return fun_with_timer
+
+@timeit
+def gamma_reject(lam, k, n):
+    assert k > 1  # We need k > 1 because gamma(0) = ∞
+    k0, lam0 = int(k), (int(k)/k)*lam
+    x_star = 0 if k0 == k else (k - k0)/(lam - lam0)
+    M = lam**k/lam0**k0 * gamma(k0)/gamma(k) * \
+        (x_star/np.exp(1))**(k-k0)
+    print(M)
+    n = int(n*M) + 1  # We do this to generate approximately n samples
+    x = rand_gamma_int(lam0, k0, n)
+    u = np.random.rand(n)
+    indices = M*u <= gamma_pdf(x, lam, k)/gamma_pdf(x, lam0, k0)
+    return x[np.where(indices)]
+
+@timeit
+def gamma_reject_cauchy(k, n):  # Only for lam == 1
+    M = (np.pi/gamma(k))*((k-1)**(k-1)*np.exp(-(k-1))*np.pi +
+                           np.pi*(k+1)**(k+1)*np.exp(-(k+1)))
+    print(M)
+    n = int(n*M) + 1  # We do this to generate approximately n samples
+    x = rand_cauchy(n)
+    u = np.random.rand(n)
+    indices = M*u <= gamma_pdf(x, 1, k)/cauchy_pdf(x)
+    return x[np.where(indices)]
+
+
+n, x = 10**4, np.linspace(0, 10, 500)
+def test(k, lam=1, plot=False):
+    y1 = gamma_reject(lam, k, n)
+    y2 = gamma_reject_cauchy(k, n)
+    if plot:
+        fig, ax = plt.subplots(1, 2)
+        ax[0].plot(x, gamma_pdf(x, lam, k))
+        ax[1].plot(x, gamma_pdf(x, lam, k))
+        ax[0].hist(y1, bins=20, density=True)
+        ax[1].hist(y2, bins=20, density=True)
+        plt.show()
+
+test(2.5)
+test(4.5)
+test(8.5, plot=True)
+
+# def gamma_reject_cauchy(lam, k, n):
+
 # #  Calculating the area of Batman
 
 # +
