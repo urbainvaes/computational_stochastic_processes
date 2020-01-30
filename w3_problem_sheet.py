@@ -22,13 +22,25 @@ import math
 import numpy as np
 import numpy.linalg as la
 import scipy.special
+import scipy.optimize
 import scipy.integrate
 import matplotlib
 import matplotlib.pyplot as plt
 import scipy.stats
 # -
 
-## Generalized Bernoulli distribution
+# +
+matplotlib.rc('font', size=20)
+matplotlib.rc('font', family='serif')
+matplotlib.rc('text', usetex=False)
+matplotlib.rc('figure', figsize=(14, 8))
+matplotlib.rc('lines', linewidth=2)
+matplotlib.rc('figure.subplot', hspace=.4)
+# -
+
+# # Generalized Bernoulli distribution
+
+# +
 def rand_bernoulli(probs, n):
     cumul = np.cumsum(probs)
     u = np.random.rand(n)
@@ -47,11 +59,163 @@ pmf = [sum(x == i)/n for i in range(1, len(probs) + 1)]
 
 print(pmf)
 # -
+# #  Calculating the area of Batman
 
+# +
+def batman_indicator(x, y):
+
+    # We'll initialize at one and remove parts one by one
+    result = np.ones(x.shape)
+
+    # Ellipse
+    ellipse = (x/7)**2 + (y/3)**2 - 1 >= 0
+    result[np.where(ellipse)] = 0
+
+    # Bottom curve on [-3, 3]
+    bottom = (abs(x) < 4) * \
+             (y <= abs(x/2) - ((3*np.sqrt(33)-7)/112)*x**2 - 3
+              + np.sqrt(np.maximum(0, 1-(abs(abs(x)-2) - 1)**2)))
+    result[np.where(bottom)] = 0
+
+    # Top curve
+    top = (abs(x) > .75) * (abs(x) < 1) * (y > 9 - 8*abs(x)) \
+          + (abs(x) > .5) * (abs(x) < .75) * (y > 3*abs(x) + .75) \
+          + (abs(x) < .5) * (y > 2.25) \
+          + (abs(x) > 1) * (abs(x) < 3) * \
+            (y > (6*np.sqrt(10)/7+(1.5-.5*abs(x))-(6*np.sqrt(10)/14)*\
+                  np.sqrt(np.maximum(0, 4-(abs(x)-1)**2))))
+    result[np.where(top)] = 0
+    return result
+
+# Exact area
+I = (955/48) - (2/7) * (2*np.sqrt(33) + 7*np.pi + 3*np.sqrt(10) * (np.pi - 1)) \
+    + 21 * (np.arccos(3/7) + np.arccos(4/7))
+
+
+xs = np.arange(-7.25, 7.25, 0.01)
+ys = np.arange(-3.1, 3.1, 0.01)
+x, y = np.meshgrid(xs, ys)
+fig, ax = plt.subplots()
+ax.contourf(x, y, batman_indicator(x, y))
+plt.show()
+# -
+
+# +
+# Dimensions of the bounding box
+Lx, Ly = 7.25, 4
+
+def Monte_Carlo(fun, n=1000):
+    x, y = np.random.rand(2, n)
+    x, y = Lx * (2*x - 1), Ly * (2*y - 1)
+    result = 4*Lx*Ly * fun(x, y)
+    return np.mean(result), result
+# -
+
+# ## Construction of confidence intervals
+# Note that, below, we estimate the probability that $|I - \hat I_n| <
+# a_{95\%}$, where $a_{95\%}$ is the half-width of 95% the confidence interval
+# constructed by one of the method, also by employing a Monte-Carlo method! In
+# particular, we could in principle construct a confidence interval for that
+# probability!
+
+# +
+# 95% confidence interval using the three methods
+alpha = .05
+
+# Calculate half-width (up factor the common factor)
+hw_cheb = 1/np.sqrt(alpha)
+hw_clt = np.sqrt(2)*scipy.special.erfinv(1 - alpha)
+def hw_bikelis_fun(m2, m3, n):
+    root = scipy.optimize.root(
+        fun = lambda a: scipy.special.erf(a/np.sqrt(2))
+                         - 2*m3/(m2**(3/2)*(1 + np.abs(a))**3)/np.sqrt(n)
+                         - (1 - alpha),
+            x0 = hw_clt)
+
+    if root.status:
+        return root.x[0]
+    else:
+        raise Exception("Root not found!")
+
+# Repeat the Monte Carlo several times to estimate the probability that I is
+# in our confidence interval
+n_times = 1000
+
+# We will construct confidence intervals based on the sample variance
+result_cheb = np.zeros(n_times)
+result_clt = np.zeros(n_times)
+result_bikelis = np.zeros(n_times)
+result_hoeffdings = np.zeros(n_times)
+
+for i in range(n_times):
+    In, result = Monte_Carlo(batman_indicator)
+
+    # Number of samples used in MC estimator
+    n = len(result)
+
+    # Calculate sample variance
+    m2, m3 = np.mean((result - In)**2), np.mean((result - In)**3)
+
+    # Common factor in confidence intervals
+    factor = np.sqrt(m2/n)
+
+    # Calculate half-width of the confidence interval with Bikelis
+    hw_bikelis = hw_bikelis_fun(m2, m3, n)
+
+    # With Hoeffding's theorem: here no factor sigma/sqrt(n)
+    hw_hoeffdings = 4*Lx*Ly * np.sqrt(- np.log((alpha)/2)/(2*n))
+
+    result_cheb[i] = abs(I - In) < hw_cheb * factor
+    result_clt[i] = abs(I - In) < hw_clt * factor
+    result_bikelis[i] = abs(I - In) < hw_bikelis * factor
+    result_hoeffdings[i] = abs(I - In) < hw_hoeffdings
+
+def print_confidence(method, value):
+    print("(Approximate) actual confidence of the 95% conf. int. "
+          "constructed via {}: {:.4f} ".format(method, value))
+
+print_confidence("Chebyshev's inequality", np.mean(result_cheb))
+print_confidence("the CLT", np.mean(result_clt))
+print_confidence("Bikelis' theorem", np.mean(result_bikelis))
+print_confidence("Hoeffdings' theorem", np.mean(result_hoeffdings))
+# -
+# Variance reduction by variate
+
+# +
+def ellipse_indicator(x, y):
+    return ((x/7)**2 + (y/3)**2 - 1 < 0)*1.
+
+# Area of ellipse
+E = np.pi * 7 * 3
+
+# Monte Carlo estimation
+n = 10**6
+x, y = np.random.rand(2, n)
+x, y = Lx * (2*x - 1), Ly * (2*y - 1)
+result_batman = 4*Lx*Ly * batman_indicator(x, y)
+result_ellipse = 4*Lx*Ly * ellipse_indicator(x, y)
+
+# Estimate the optimal coefficient
+Sigma = np.cov(result_batman, result_ellipse)
+alpha = - Sigma[0, 1] / Sigma[1, 1]
+
+# Estimator with control variate
+result_c = result_batman + alpha * (result_ellipse - E)
+
+# Variance (times n)
+var_c = np.var(result_c)
+
+print("Variance (times n) without and with control variate:",
+      "{:.2f}, {:.2f}.".format(Sigma[0, 0], var_c))
+
+# Compare with expected variance reduction
+exact_gain = 1 - (I*(4*Lx*Ly -E))/(E*(4*Lx*Ly - I))
+print("Observed and exact variance reduction:",
+      "{:.3f}, {:.3f}.".format(var_c/Sigma[0, 0], exact_gain))
 
 ## Gambler's ruin
 
-# + 
+# +
 def gamblers_ruin(b_fun, n, plot=False):
 
     # Parameters
