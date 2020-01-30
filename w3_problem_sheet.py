@@ -20,7 +20,6 @@
 # For a copy, see <https://opensource.org/licenses/MIT>.
 import time
 import numpy as np
-import numpy.linalg as la
 import scipy.special
 import scipy.optimize
 import scipy.integrate
@@ -61,8 +60,8 @@ print(pmf)
 # -
 # # Sampling from $\text{Gamma}(k, \lambda)$
 
+# +
 gamma = scipy.special.gamma
-
 
 def rand_gamma_int(lam, k, n):
     u = np.random.rand(k, n)
@@ -95,7 +94,6 @@ def gamma_reject(lam, k, n):
     x_star = 0 if k0 == k else (k - k0)/(lam - lam0)
     M = lam**k/lam0**k0 * gamma(k0)/gamma(k) * \
         (x_star/np.exp(1))**(k-k0)
-    print(M)
     n = int(n*M) + 1  # We do this to generate approximately n samples
     x = rand_gamma_int(lam0, k0, n)
     u = np.random.rand(n)
@@ -106,7 +104,6 @@ def gamma_reject(lam, k, n):
 def gamma_reject_cauchy(k, n):  # Only for lam == 1
     M = (np.pi/gamma(k))*((k-1)**(k-1)*np.exp(-(k-1))*np.pi +
                            np.pi*(k+1)**(k+1)*np.exp(-(k+1)))
-    print(M)
     n = int(n*M) + 1  # We do this to generate approximately n samples
     x = rand_cauchy(n)
     u = np.random.rand(n)
@@ -129,8 +126,7 @@ def test(k, lam=1, plot=False):
 test(2.5)
 test(4.5)
 test(8.5, plot=True)
-
-# def gamma_reject_cauchy(lam, k, n):
+# -
 
 # #  Calculating the area of Batman
 
@@ -285,8 +281,61 @@ print("Variance (times n) without and with control variate:",
 exact_gain = 1 - (I*(4*Lx*Ly -E))/(E*(4*Lx*Ly - I))
 print("Observed and exact variance reduction:",
       "{:.3f}, {:.3f}.".format(var_c/Sigma[0, 0], exact_gain))
+# -
+# # Importance sampling
 
-## Gambler's ruin
+# +
+pdf_double_exponential = lambda x: (1/2)*np.exp(-np.abs(x))
+
+def pdf_gaussian(sigma):
+    return lambda x: 1/np.sqrt(2*np.pi*sigma**2) * np.exp(-.5*x**2/sigma**2)
+
+def importance_sampling(sigma, n=10**5):
+    x = sigma * np.random.randn(n)
+    result = (x**2 * pdf_double_exponential(x) / pdf_gaussian(sigma)(x))
+    return np.mean(result), np.var(result)
+
+n_sigmas = 20
+sigmas = np.logspace(0, 1, n_sigmas)
+mean, var = np.zeros(n_sigmas), np.zeros(n_sigmas)
+for i, s in enumerate(sigmas):
+    mean[i], var[i] = importance_sampling(s)
+
+fig, ax = plt.subplots()
+ax.loglog(sigmas, var, marker='.')
+ax.set_xlabel(r"$\sigma$")
+ax.set_ylabel(r"Variance of the estimator, times $n$")
+plt.show()
+
+# More general importance sampling function
+def importance_sampling(f, nominal_pdf, importance_pdf,
+                        rand_important, n=10**3, self_norm=False):
+    x = rand_important(n)
+    fx = f(x)
+    ratios = nominal_pdf(x) / importance_pdf(x)
+    nominator = np.sum(fx*ratios)
+    denominator = np.sum(ratios) if self_norm else n
+    return nominator / denominator
+
+n_tests = 10**3
+estimators = np.zeros(n_tests)
+estimators_sn = np.zeros(n_tests)
+pdf_gumbel = lambda x: np.exp(x - np.exp(x))
+for i in range(n_tests):
+    args = (lambda x: np.exp(x), pdf_gumbel,
+            pdf_gaussian(1), np.random.randn)
+    estimators[i] = importance_sampling(*args, self_norm=False)
+    estimators_sn[i] = importance_sampling(*args, self_norm=True)
+
+# Check
+exact = scipy.integrate.quad(lambda x: np.exp(2*x - np.exp(x)), -10, 10)[0]
+print(exact, np.mean(estimators), np.mean(estimators_sn))
+
+print("Variance without self-normalization: {}".format(np.var(estimators)))
+print("Variance with self-normalization: {}".format(np.var(estimators_sn)))
+# -
+
+# # Gambler's ruin
 
 # +
 def gamblers_ruin(b_fun, n, plot=False):
