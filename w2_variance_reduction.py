@@ -32,6 +32,7 @@ matplotlib.rc('font', family='serif')
 matplotlib.rc('text', usetex=False)
 matplotlib.rc('figure', figsize=(14, 8))
 matplotlib.rc('lines', linewidth=2)
+matplotlib.rc('figure.subplot', hspace=.4)
 
 # Fix the seed
 np.random.seed(0)
@@ -415,7 +416,7 @@ print(np.mean(hy), np.var(hy))
 # -
 
 # # A more interesting example of importance sampling
-# Assume that $\{Z_i\}_{i=1}^N$ are indepedent $\mathcal N(0, \sigma^2)$ random variables and
+# Assume that $\{Z_i\}_{i=1}^N$ are independent $\mathcal N(0, \sigma^2)$ random variables and
 # define
 # $$
 # S_k = s_0 + \sum_{i=1}^k Z_i, \qquad k = 1, \dotsc, N.
@@ -529,4 +530,6 @@ ax[0].plot(np.arange(N + 1), np.zeros(N + 1), linestyle='--', color='k')
 ax[1].plot(np.arange(N + 1), np.zeros(N + 1), linestyle='--', color='k')
 ax[0].set_title("Samples from $\pi(\cdot)$")
 ax[1].set_title("Samples from $\psi(\cdot)$")
+ax[0].set_xlabel("$k$")
+ax[1].set_xlabel("$k$")
 plt.show()

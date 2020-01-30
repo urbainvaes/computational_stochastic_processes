@@ -150,7 +150,7 @@ plt.show()
 # $$
 # where $\gamma(\cdot)$ is the PDF of $\mathcal N(0, 1)$.
 # Therefore, for large $n$,
-# it hold with probability approximately $(1 - \alpha)$ that
+# it holds with probability approximately $(1 - \alpha)$ that
 # $$
 # |\hat I_n - I| \leq \left(\frac{\sigma}{\sqrt{n}}\right) \, \sqrt{2} \textrm{erf}^{-1}(1 - \alpha)
 # $$
