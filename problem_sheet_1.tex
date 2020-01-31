@@ -1,0 +1,506 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amssymb,amsmath,amsthm}
+\usepackage{graphicx,ctable,booktabs}
+\usepackage{setspace}
+\usepackage{python-highlight}
+\usepackage{bbm}
+\usepackage{hyperref}
+\setstretch{1.15}
+
+\newcommand{\real}{\mathbb R}
+\usepackage{xcolor}
+\definecolor{darkblue}{RGB}{0,51,102}
+\definecolor{darkgreen}{RGB}{0,102,51}
+\definecolor{darkgrey}{RGB}{120,120,120}
+
+\newtheorem{theorem}{Theorem}
+\theoremstyle{definition}
+\newtheorem{problem}{Problem}
+\theoremstyle{plain}
+
+\usepackage{comment}
+\newif\ifshow\showfalse
+\ifshow
+\newtheorem*{solution}{Solution}
+\else
+\excludecomment{solution}
+\fi
+
+\begin{document}
+
+\title{%
+    \textsc{Computational Stochastic Processes} \\
+    Problem Sheet 1
+}
+\author{Urbain Vaes}
+\date{February 2020}
+
+\maketitle
+
+You are free to return a selection of your work to me for marking.
+This is entirely optional and the mark will not count for assessment.
+
+\section*{Generating non-uniform random variables}%
+\label{sec:generating_non_uniform_random_variables}
+
+
+\begin{problem}[Generalized Bernoulli Distribution]
+Assume that $X$ is a discrete valued-random variable taking values $i$ with probability $p_i$ for $i \in \lbrace 1, \ldots, k \rbrace$ where $\sum_{i=1}^k p_i=1$.
+\begin{enumerate}
+    \item Write down the cumulative distribution function (CDF) $F(x)$ of this random variable.
+\item Write down an expression for the generalized inverse of the CDF.
+\item Use the inverse transform method to derive an algorithm to sample from this distribution.
+\item Implement a sampler based on this scheme using a programming language of your choice.
+\item   For $k=4$ and $(p_1, p_2, p_3, p_4) = (0.125, 0.125, 0.375, 0.375)$,
+    generate $N = 10^3$ samples and generate a normalized histogram from this sample to verify that each value is generated with the correct probability.
+\end{enumerate}
+\end{problem}
+\begin{problem}
+    [Sample from $\mbox{Gamma}(k, \lambda)$ distribution]
+When $k \in \mathbb{N}$, it is known that
+$$
+  X_1 + \ldots + X_k \sim \mbox{Gamma}(k,\lambda),
+$$
+where $X_1, \ldots, X_k$ are iid $\mbox{Exp}(\lambda)$ distributed random variables.
+\begin{enumerate}
+\item Based on this observation, write a scheme to generate $\mbox{Gamma}(k, \lambda)$ distributed samples, where $k \in \mathbb{N}$.
+
+\begin{solution}
+We use the inverse transform method to generate $k$, $Exp(\lambda)$ random variables, and add them, i.e.
+\begin{enumerate}
+\item Let $u_1, \ldots, u_k \sim U(0,1)$ iid.
+\item Set $X = -\frac{1}{\lambda}\sum_{i=1}^k \log(u_i)$.
+\end{enumerate}
+\end{solution}
+
+\item Suppose now that $k \in \mathbb{R}_{\geq 0}$.  We wish to implement a rejection sampler for $\mbox{Gamma}(k, \lambda)$ using proposal density of the form
+$$
+  g(x) = \frac{\lambda_0^{k_0}}{\Gamma(k_0)}x^{k_0-1}e^{-\lambda_0 x},
+$$
+where $k_0 = \lfloor k \rfloor$, and $\lambda_0 > 0$.  Calculate the upper bound $M = \sup_{x \geq 0} f(x)/g(x)$, and show that necessarily $\lambda < \lambda_0$ and
+$$
+  M = \frac{\lambda^k}{\Gamma(k)}\frac{\Gamma(k_0)}{\lambda_0^{k_0}}\left(\frac{k-k_0}{\lambda-\lambda_0}\right)^{k-k_0}e^{-(k-k_0)}.
+$$
+
+\begin{solution}
+The pdf of $X$ is given by
+$$
+   f(x) = \frac{\lambda^k}{\Gamma(k)}x^{k-1}e^{-\lambda x},\quad k > 1.
+$$
+The ratio $f(x)/g(x)$ is given by
+$$
+\frac{\lambda^k}{\Gamma(k)}\frac{\Gamma(k_0)}{\lambda_0^{k_0}}x^{k-k_0}e^{-(\lambda-\lambda_0)x}.
+$$
+We want a bound for $f/g$ for all $x\geq 0$.  In particular, it is automatically bounded at $x = 0$ since $k \geq k_0$.  But to be bounded as $x \rightarrow + \infty$, we require that $\lambda - \lambda_0 > 0$.  Under this assumption it is straightforward to check that the maximum is obtained at $x^*$ given by
+$$
+  x^* = \frac{k-k_0}{\lambda - \lambda_0}.
+$$
+For this value of $x$, we have
+\begin{align*}
+  M &= f(x^*)/g(x^*) \\
+    &= \frac{\lambda^k}{\Gamma(k)}\frac{\Gamma(k_0)}{\lambda_0^{k_0}}(x^*)^{k-k_0}e^{-(\lambda-\lambda_0)x^*} \\
+    &= \frac{\lambda^k}{\Gamma(k)}\frac{\Gamma(k_0)}{\lambda_0^{k_0}}(x^*/e)^{k-k_0}.
+\end{align*}
+\end{solution}
+
+\item Optimise over $\lambda_0$ to minimise $M$.
+
+\begin{solution}
+Take the derivative of $M$ with respect to $\lambda_0$.  After some simplification we see that the minimum occurs when
+$$
+  \lambda_0 = \frac{k_0}{k}\lambda,
+$$
+and since $\lambda_0 < \lambda$, this is consistent with out previous assumption.
+\end{solution}
+\item {Noting that we can perform rejection sampling without normalisation constants}, implement a rejection sampling scheme to sample from Gamma distribution.   Implement also the naive sampler described during the course, and compare the performance of both.\\
+\begin{solution}
+See Problem4.m.  I suggest you run it for a large $N$ (say 100000), with fixed $\lambda$ and vary $k$ (for example, $k = 1.1, \, 4.5, \, 9.5$). You should notice that the rejection based sampler with Cauchy proposals does not scale well as $k\rightarrow \infty$, whereas our new approach has run-time almost independent of $k$.
+\end{solution}
+\end{enumerate}
+\end{problem}
+
+\section*{Monte Carlo simulation}%
+\label{sec:monte_carlo_simulation}
+
+\begin{problem}
+    [Monte Carlo Simulation]
+
+We want to estimate the area inside the \href{http://mathworld.wolfram.com/BatmanCurve.html}{Batman curve} via Monte Carlo simulation.
+To this end, let $(X, Y)$ be a uniformly distributed random variable in the rectangle $[-L_x,L_x]\times[-L_y,L_y]$,
+with $L_x = 7.25$ and $L_y = 4$,
+and let $f(\cdot, \cdot)$ denote the indicator function of the surface inside the Batman curve.
+For the student's convenience, this function is implemented in \emph{Python} below:
+\begin{python}
+def batman_indicator(x, y):
+
+    # We'll initialize at one and remove parts one by one
+    result = np.ones(x.shape)
+
+    # Ellipse
+    ellipse = (x/7)**2 + (y/3)**2 - 1 >= 0
+    result[np.where(ellipse)] = 0
+
+    # Bottom curve on [-3, 3]
+    bottom = (abs(x) < 4) * \
+             (y <= abs(x/2) - ((3*np.sqrt(33)-7)/112)*x**2 - 3
+              + np.sqrt(np.maximum(0, 1-(abs(abs(x)-2) - 1)**2)))
+    result[np.where(bottom)] = 0
+
+    # Top curve
+    top = (abs(x) > .75) * (abs(x) < 1) * (y > 9 - 8*abs(x)) \
+          + (abs(x) > .5) * (abs(x) < .75) * (y > 3*abs(x) + .75) \
+          + (abs(x) < .5) * (y > 2.25) \
+          + (abs(x) > 1) * (abs(x) < 3) * \
+            (y > (6*np.sqrt(10)/7+(1.5-.5*abs(x))-(6*np.sqrt(10)/14)*\
+                  np.sqrt(np.maximum(0, 4-(abs(x)-1)**2))))
+    result[np.where(top)] = 0
+    return result
+\end{python}
+\begin{enumerate}
+    \item Using a sample of size $n = 10^3$,
+        generate a $95\%$ confidence interval for $I = \mathbb{E}[f(X,Y)]$ based on
+        \begin{enumerate}
+            \item Chebychev's inequality;
+            \item The central limit theorem (CLT);
+            \item Bikelis' theorem.
+        \end{enumerate}
+        In each case, translate your confidence interval for $I$ into a confidence interval for $\pi$.
+\begin{solution}
+    From the lecture notes, we know that the $(1 - \alpha)$ confidence intervals are given by
+    \begin{enumerate}
+        \item Chebychev's inequality: $\left[I_N - \frac{\sigma}{\sqrt{N\alpha}} , \, I_N + \frac{\sigma}{\sqrt{N\alpha}}\right]$.
+        \item The CLT: $\left[I_N - c_\alpha\frac{\sigma}{\sqrt{N}} , \, I_N + c_\alpha\frac{\sigma}{\sqrt{N}}\right]$, where $c_\alpha$ is such that $2(1-\phi(c_\alpha)) = \alpha$ and $\phi(\cdot)$ is the CDF of $\mathcal{N}(0,1)$.
+    \end{enumerate}
+\end{solution}
+    \item Perform this previous simulation $1000$ times independently,
+        and measure how many of the reported confidence intervals actually contained $I$.
+\begin{solution}
+    Running this for $\alpha = 0.05$ and $N=1000$,
+    we see that approximately $95\%$ of the confidence intervals obtained from the CLT contain $I$,
+    while $100\%$ of the confidence intervals obtained from Chebychev contain $I$,
+    which suggests that the Chebychev confidence intervals are too loose!
+\end{solution}
+    \item Use Hoeffding's inequality to derive $100(1-\alpha)\%$-confidence intervals and
+        compare with the ones obtained via Chebychev and the CLT.
+\begin{solution}
+    From Hoeffding's inequality, we can generate the confidence interval
+    $I \in \left[I_N - {\color{red} 4a} , \, I_N + {\color{red} 4a}\right]$ (this is because Hoeffding's inequality is {\bf only} valid for variables which are supported in $[0,1]$ and with $I_N$ we are making them supported in $[0,4]$), where see that we need
+    \[
+        2e^{-2na^2} \leq \alpha,
+    \]
+    or equivalently
+    \[
+        a \geq \sqrt{\frac{-\log(\alpha/2)}{2n}},
+    \]
+    for confidence $100(1-\alpha)\%$.
+    Repeating the computation above with the new confidence interval (the code is identical), we see that the Hoeffding confidence intervals contain $\pi$ with probability $1$.  This implies that the bounds are somewhat coarse.  This shouldn't be too surprising in this case: the Hoeffding inequality does not depend on the variance of the estimator! Without this information, it is natural that the confidence intervals would be quite conservative.
+\end{solution}
+\item Find a control variate that enables a reduction of the variance of the estimator.
+\end{enumerate}
+\end{problem}
+
+\begin{problem}[Density estimation using Histograms]
+A very common problem in computational stochastic methods is the estimation of density, i.e. given a stream of iid samples of some random variable $X$ we wish to accurately recover the density $p(x)$ of $X$.  The MC approach to density estimation is to express the density $p(x)$ as a limit of expectations of rvs, namely
+$$
+  p(x) = \lim_{h\rightarrow 0}\frac{\mathbb{E}\mathbf{1}\left[x < X < x + h\right]}{h}.
+$$
+Thus, for small $h$, we use the following MC estimator
+$$
+  \hat{p}_n(x) = \frac{1}{hn}\sum_{i=1}^{n} \mathbf{1}\left[x < X_i < x+h\right]
+$$
+\begin{enumerate}
+\item  Assume that $p \in C^1(\mathbb{R})$, use Taylor's theorem to show that $\hat{p}_n(x)$ is asymptotically biased (and thus biased).   Show that the bias goes to zero as $h \rightarrow 0$.
+\item Compute the variance of the estimator $\hat{p}(x)$.  Show that $\mbox{Var}[\hat{p}_n(x)] \rightarrow \infty$ as $h \rightarrow 0$.
+\end{enumerate}
+Taking $h\rightarrow 0$, the bias goes to zero, while the variance blows up.  This suggests we can make a good choice of $h$ must involve some kind  of ``trade-off'' between variance and bias.
+\begin{enumerate}
+  \setcounter{enumi}{2}
+  \item Assuming again that $p \in C^1(\mathbb{R})$.  Write an expression for the MSE of $\hat{p}_n$ which is correct  to $o(h)$.
+  \item  Find the value of $h$ which minimises the MSE.
+      Conclude that MSE is minimized taking $h = O(N^{-1/3})$,
+      in which case the MSE goes to zero with rate $N^{-2/3}$.
+\end{enumerate}
+\end{problem}
+
+
+\section*{Variance reduction techniques}%
+\label{sec:variance_reduction_techniques}
+
+\begin{problem}{Importance Sampling}
+Consider the problem of estimating the moments of the distribution
+$$
+  p(x) = \frac{1}{2}e^{-|x|},
+$$
+called the double expontential density.  The CDF of this function is
+$$
+  F(x) = \frac{1}{2}e^{x}\mathbf{1}[x \leq 0] + \frac{1}{2}(1-e^{-x}/2)\mathbf{1}[x > 0],
+$$
+which is a piecewise function and difficult to invert.  Indeed, we cannot ``easily'' sample from this distribution.   Suppose we wish to estimate the second moment of the distribution $\mathbb{E}[X^2]$.
+\begin{enumerate}
+\item Using importance sampling distribution $\mathcal{N}(0, 4)$ construct an importance sampler for computing $\mathbb{E}[X^2]$.
+\item Implement this sampler in a programming language of your choice, and generate $10^5$ samples, and compute the mean.  The true value of this expectation should be $2$.
+\item Can you use the expression for the variance of the importance sampler (or some other method) to find a better choice of $\sigma^2$ for a proposal distribution $\mathcal{N}(0, \sigma^2)?$ Implement this scheme and compare the performance computationally.
+\end{enumerate}
+
+In machine learning one often needs to compute expectations with respect to the \emph{Gumbel distribution}
+$$
+  p(x) = \exp(x-  \exp(x)).
+$$
+
+\begin{enumerate}
+  \setcounter{enumi}{3}
+\item Show that $\mathbb{E}[\exp(X)] < \infty$, where $X \sim p$.
+\item Using a standard Gaussian importance distribution, implement a regular importance sampler approximating $\mathbb{E}[\exp(X)]$ in a programming language of your choice.
+\item Similarly implement a self-normalized version of the importance sampler.
+\item Compare the performance of both by computing the variance of both estimators, approximated over $10^3$ independent runs.
+\end{enumerate}
+\end{problem}
+
+\begin{problem}
+    [Gambler's ruin]
+    Here we consider again a problem that was discussed in the workbook on variance reduction techniques.
+    Assume that $\{Z_i\}_{i=0}^{N-1}$ are independent $\mathcal N(0, \sigma^2)$ random variables and
+    define
+    \[
+        S_k = s_0 + \sum_{i=0}^{k-1} Z_i, \qquad k = 1, \dotsc, N.
+    \]
+    we want to calculate the probability of ruin within the first $N$ games, given by
+    $$
+    I = \mathbb P \left(\min_{k \in \{1, \dotsc, N\}} S_k \leq 0 \right),
+    $$
+    In order to better estimate $I$ with a Monte Carlo,
+    we will use importance sampling with an important distribution given by the PDF of the $\mathbb R^N$-valued random variable $V$
+    obtained by
+    \begin{equation}
+        \label{eq:modified_dynamics}%
+        V_k = s_0 + \sum_{i=0}^{k-1} b(V_{i}) + \sum_{i=0}^{k-1} Z_i, \qquad k = 1, \dotsc, N,
+    \end{equation}
+    where $b(\cdot)$ is real-valued function.
+    \begin{enumerate}
+        \item Calculate the likelihood ratio $g(v)$ between the PDF of $V = (V_1, \dotsc, V_N)^T$ and that of $S = (S_1, \dotsc, S_N)^T$.
+        \item Show that, if $V = (V_1, \dotsc, V_N)^T$ is obtained from~\eqref{eq:modified_dynamics},
+            then the likelihood ratio evaluated at $V$ admits the following expression:
+            \[
+                g(V) = \exp \left( - \frac{1}{\sigma^2} \left( \sum_{i=0}^{N-1} b(V_i) \, Z_i + \frac{1}{2} \sum_{i=0}^{N-1} |b(V_i)|^2 \right) \right),
+            \]
+            where we used the notation the notation $V_0 = s_0$.
+        \item Calculate the expectation $\mathbb E[g(V)]$. Was the result expected?
+\begin{solution}
+For $k \in \{1, \dotsc, N - 1\}$, let
+\begin{align*}
+    g_{k}(V) &= \exp \left( - \frac{1}{\sigma^2} \left( \sum_{i=0}^{k-1} b(V_i) \, Z_i + \frac{1}{2} \sum_{i=0}^{k-1} |b(V_i)|^2 \right) \right).
+\end{align*}
+Clearly $g_0(V) = 1$ and we calculate that
+\begin{align*}
+    g_{k+1}(V) &= g_{k}(V) \, \exp \left( - \frac{1}{\sigma^2} \left( b(V_{k}) \, Z_{k} + \frac{1}{2} |b(V_{k})|^2 \right) \right).
+\end{align*}
+Since both factors are independent,
+\begin{align*}
+    \mathbb E [g_{k+1}(V)] &= \mathbb E[g_{k}(V)] \, \mathbb E \left[\exp \left( - \frac{1}{\sigma^2} \left( b(V_{k}) \, Z_{k} + \frac{1}{2} |b(V_{k})|^2 \right) \right)\right] \\
+                           &= \mathbb E[g_{k}(V)] \, \int_{\real} \left[ \exp \left( - \frac{1}{\sigma^2} \left( b(V_{k+1}) \, Z_{k+1} + \frac{1}{2} |b(V_{k+1})|^2 \right) \right) \right] \\
+\end{align*}
+\end{solution}
+    \item For the parameters $N = 10$ and $\sigma = .2$, calculate $I$ by using importance sampling using the modified dynamics~\eqref{eq:modified_dynamics}.
+        Can you find a choice of the function $b(\cdot)$ that produces better results than the constant function $b(\cdot) = - .1$?
+\begin{solution}
+    See the Jupyter notebook.
+\end{solution}
+    \end{enumerate}
+\end{problem}
+
+
+
+\section*{Simulation of continuous-time Gaussian processes}%
+\label{sec:simulation_of_continuous_time_gaussian_processes}
+
+\begin{problem}
+    [Simulation of Markovian Gaussian processes]
+A very useful property of multivariate Gaussian random variables is that if we condition on part of the random vector,  the resulting distribution remains Gaussian.  To see this, suppose that
+\[
+  \mathbf{X} =  (X_1,X_2)^\top \sim \mathcal{N}(\mathbf{m}, \Sigma),  \qquad 
+  \Sigma = \left[\begin{array}{cc}\Sigma_{11} & \Sigma_{12} \\ \Sigma_{21} & \Sigma_{22}\end{array}\right].
+\]
+
+Then we know that
+\[
+  \mathbf{X}_1 \sim \mathcal{N}(\mathbf{m}_1, \Sigma_{11}),\quad \text{ and} \quad 
+  \mathbf{X}_2 \sim \mathcal{N}(\mathbf{m}_2, \Sigma_{22}).
+\]
+Furthermore, the conditional distribution of $\mathbf{X}_2$ conditional on $\mathbf{X}_1$ is a multivariate normal with
+\[
+  \mathbb{E}[\mathbf{X}_2 \, | \, \mathbf{X}_1] = \mathbf{m}_2 + \Sigma_{21}\Sigma_{11}^{-1}(\mathbf{X}_1 - \mathbf{m}_1).
+\]
+and
+\[
+  \mbox{Var}(\mathbf{X}_2 \, | \, \mathbf{X}_1) = \Sigma_{22} - \Sigma_{21}\Sigma_{11}^{-1}\Sigma_{12}.
+\]
+Using these properties we can develop a more efficient scheme to simulate Gaussian processes, more specifically to interpolate between already simulated points of a Gaussian process.  
+
+\begin{enumerate}
+\item Suppose we wish to generate $X_{n+1}$ at time $t_{n+1}$ given that we have already generated $X_0, \ldots, X_n$. 
+\begin{enumerate}
+\item Specify the conditional distribution of $X_{n+1}$ given $X_0, \ldots, X_n$.  
+\item Use this to construct a numerical scheme to simulate a Gaussian stochastic process.
+\end{enumerate}
+\item Suppose additionally that the Gaussian process $X(t)$ is Markovian, so that in particular, you only need to know the value of $X({t_n})$ to generate $X(t_{n+1})$.  Construct a scheme to iteratively sample $X(t_i)$ over a sequence of points $t_0 < t_1 < t_2 < \ldots.$
+\begin{enumerate}
+\item In the case of Brownian motion, show that the update formula can be written as:
+$$
+  X(t_{i+1}) = X(t_i) + \left(\sqrt{t_{i+1} - t_i}\right)Z,
+$$
+where $Z \sim \mathcal{N}(0,1)$.
+\item Derive a similar update formula for the stationary Ornstein-Uhlenbeck process with mean $0$ and covariance $C(s,t) = \exp(\alpha|t-s|/2).$
+\end{enumerate}
+\end{enumerate}
+\end{problem}
+
+\begin{problem}[Karhunen--Loève expansion]
+    Consider the Gaussian random field $X(x)$ in $\real$ with covariance function
+    \[
+        \gamma(x,y) = e^{-a |x-y|}
+    \]
+    where $a>0$.
+
+\begin{enumerate}
+
+\item Simulate this field: generate samples and calculate the first four moments.
+
+\begin{solution}
+Note that we have already done this when we simulated Gaussian processes (the OU process!). See Problem8.m for solution.
+\end{solution}
+
+\item Consider $X(x)$ for $x \in [-L,L]$. Calculate analytically the eigenvalues and eigenfunctions of the integral operator $\mathcal{K}$ with kernel $\gamma(x,y)$,
+$$
+\mathcal{K} f(x) = \int_{-L}^{L} \gamma(x,y) f(y) \, dy.
+$$
+Use this in order to obtain the Karhunen-Lo\'{e}ve expansion for $X$. Plot the first five eigenfunctions when $a=1, \, L=0.5$. Investigate (either analytically or by means of numerical experiments) the accuracy of the KL expansion as a function of the number of modes kept.
+
+\begin{solution}
+We need to compute eigenvalues $\lambda$ and eigenfunctions $\Phi$ such that
+\[
+\int_{-L}^L e^{-a|x-y|}\Phi(y) \ dy = \lambda \Phi(x).
+\]
+We note that we can write this as
+\begin{equation}\label{eq:e-fun}
+\int_{-L}^x e^{-a(x-y)}\Phi(y) \ dy + \int_{x}^L e^{a(x-y)}\Phi(y) \ dy = \lambda \Phi(x).
+\end{equation}
+We differentiate~\eqref{eq:e-fun} with respect to $x$ to obtain
+\begin{equation}\label{eq:e-dif}
+-a\int_{-L}^x e^{-a(x-y)}\Phi(y) \ dy + a\int_{x}^L e^{a(x-y)}\Phi(y) \ dy = \lambda \Phi'(x),
+\end{equation}
+where $'$ represents derivative with respect to $x$. Differentiating again, we obtain
+\begin{equation}\label{eq:final}
+(-2a+a^2\lambda)\Phi(x) = \lambda \Phi''(x).
+\end{equation}
+Defining $\omega^2 = \frac{-2a+\lambda a^2}{\lambda}$, we obtain the ODE
+\[
+\Phi''(x) -\omega^2 \Phi(x) = 0, \qquad -L\leq x \leq L.
+\]
+We need two boundary conditions. We obtain them by evaluating equations~\eqref{eq:e-fun} and~\eqref{eq:e-dif} at $x=-L$ and $x=L$ and rearranging:
+\begin{align}
+\label{bc-1} a\Phi(L)+\Phi'(L) &= 0, \\
+\label{bc-2} a\Phi(-L)-\Phi'(-L) &= 0.
+\end{align}
+
+It can be shown that equation~\eqref{eq:final} with boundary conditions \eqref{bc-1}--\eqref{bc-2} only has solutions when $\omega^2\geq 0$ and that these are of the form
+\[
+\Phi(x) = c_1\cos(\omega x) + c_2\sin(\omega x).
+\]
+In order to compute the eigenvalues, we use the boundary conditions and obtain
+\begin{align*}
+c_1( a - \omega\tan(\omega L)) + c_2(\omega +  a\tan(\omega L)) &= 0, \\
+c_1( a - \omega\tan(\omega L)) - c_2(\omega +  a\tan(\omega L)) &= 0.
+\end{align*}
+This system has nontrivial solutions only if its determinant is zero, which gives the following:
+\begin{align*}
+( a - \omega\tan(\omega L))  &= 0, \\
+(\omega +  a\tan(\omega L)) &= 0.
+\end{align*}
+Denoting the solutions to these equations by $\omega, \, \omega^*$, we obtain the eigenvalues and eigenfunctions:
+\begin{align}
+\Phi_n(x) = \frac{\cos(\omega_n x)}{\sqrt{L+\frac{\sin(2\omega_n L)}{2\omega_n}}}, & \qquad\qquad \lambda_n = \frac{2a}{\omega_n^2+a^2}, & n \text{ even},\\
+\Phi_n^*(x) = \frac{\sin(\omega_n^* x)}{\sqrt{L-\frac{\sin(2\omega_n^* L)}{2\omega_n^*}}}, & \qquad\qquad \lambda_n^* = \frac{2a}{{\omega_n^*}^2+a^2}, & n \text{ odd}.\\
+\end{align}
+And we can write
+\[
+X(t,\omega) = \sum_{n=1}^\infty \left[\xi_n\sqrt{\lambda_n}\Phi_n(x) + \xi_n^*\sqrt{\lambda_n^*}\Phi_n^*(x)\right],
+\]
+where $\xi_n, \, \xi_n^*$ are computed by taking the inner product of $X$ with the eigenfunctions.
+\end{solution}
+\item Develop a numerical method for calculating the first few eigenvalues/eigenfunctions of $\mathcal{K}$ with  $a=1, \, L=-0.5$. Use the numerically calculated eigenvalues and eigenfunctions to simulate $X(x)$ using the KL expansion. Compare with the analytical results and comment on the accuracy of the calculation of the eigenvalues and eigenfunctions and on the computational cost.
+
+\begin{solution}
+Not presented here. Would need to write the eigenfunctions in a chosen basis and obtain generalised eigenvalue problem. Then solve it numerically and compare with the solutions obtained analytically.
+\end{solution}
+
+\end{enumerate}
+\end{problem}
+
+% \begin{problem}{Control Variates}
+% Let $X \sim p$ and suppose we want to evaluate
+% $$
+%   \mathbb{P}(X > a) = \int_{a}^{\infty}p(x)\,dx.
+% $$
+% Suppose that $p$ is symmetric around zero, so that $\mathbb{P}(X > 0) = \frac{1}{2}$.   Form a control variate estimator
+% $$
+%   \hat{I}_n^c = \frac{1}{n}\sum_{i=1}^{n}\left[\mathbf{1}(X_i > a) + \alpha\left( \mathbf{1}(X_i > 0) - \frac{1}{2}\right)\right]
+% $$
+% \begin{enumerate}
+% \item Compute the variance $\mbox{Var}[\hat{I}_n^c]$.
+% \item Find the optimal value of $\alpha$ for which there is maximum reduction in variance.  Is it computable in practice?   Find a range of $\alpha$ over which there will be some improvement in variance.
+% \item Suppose now that $p$ is the standard Gaussian distribution, and $a = 4$.  Implement both a standard MC estimator $\hat{I}_n$ and appropriately tuned control variate estimator $\hat{I}_n^c$.  Plot the $95\%$ intervals for both as a function of $n$.
+% \end{enumerate}
+% \end{problem}
+%
+%
+%
+%
+% \begin{problem}{Sampling uniformly on spheres and balls}
+%   A random variable has uniform distribution on the $d$--dimensional ball $D=\lbrace x \in R^d: |x|^2 \leq 1\rbrace$ if the random variable takes values almost surely in $D$ and has distribution
+%   $$
+%   p(x)\,dx = \frac{\,dx}{\int_{D} 1\,dx}.
+%   $$
+%   Similarly, a random variable has uniform distribution on the sphere  $C = \lbrace x \in \mathbb{R}^d: |x|^2=1\rbrace$ if the random variable takes values almost surely in $C$ and has distribution,
+%   $$
+%     q(dx) = \frac{1}{\lambda(C)}\lambda(dx)
+%   $$
+%   where $\lambda(dx)$ is the spherical measure on $C$.
+% \begin{enumerate}
+%   \item Given $U \sim U(0,1)$, show that $(\cos(2\pi U), \sin(2\pi U))$ is uniformly distributed on the 2D circle.
+%   \item Suppose we want to sample uniformly from the 3D sphere.  We use the spherical coordinate transformation $\psi \in [0,\pi]$, and $\theta \in[0,2\pi]$,
+%   $$
+%     (x(\theta, \psi), y(\theta, \psi), z(\theta, \psi)) = \left(\sin(\psi)\cos(\theta), \sin(\psi)\sin(\theta), \cos(\psi)\right).
+%   $$
+%   \begin{enumerate}
+%     \item Writing the spherical measure in spherical coordinates,  write down the marginal densities of the random variables $\psi$ and $\theta$, and write down the CDF of $\psi$.
+%     \item Based on the previous step, generate samples $\psi$ and $\theta$ using an appropriate method, and construct a sampler generate samples from the $2$--sphere.
+%   \end{enumerate}
+%
+%   \item Given $(X,Y) \sim U(D)$, show that $$\left(\frac{X}{\sqrt{X^2 + Y^2}}, \frac{Y}{\sqrt{X^2+Y^2}}\right)\sim U(C),$$ where $C$ is the 1-sphere in $\mathbb{R}^d$.  Construct a rejection based sampler to generate samples $U(C)$ using proposals with distribution $U([-1,1]\times[-1,1])$.  This algorithm can be readily generalised sample from spheres in arbitrary dimensions.  How do you expect the average performance to depend on dimension?
+%   \item Suppose we can generate samples $X, Y \sim \mathcal{N}(0,1)$ iid.  Show that
+% $$
+%   \left(\frac{X}{\sqrt{X^2 + Y^2}}, \frac{Y}{\sqrt{X^2+Y^2}}\right)\sim U(C).
+% $$
+% \end{enumerate}
+% \end{problem}
+% \begin{problem}{Sampling Gaussian random variables}
+% First we consider the problem of generating Gaussians using rejection sampling
+% \begin{enumerate}
+% \item The standard Cauchy distribution is a continuous probability distribution having pdf:
+% $$
+%   f(x) = \frac{1}{\pi(1+x^2)}.
+% $$
+% Use the inverse transform method to derive an algorithm to sample from this distribution.
+% \item Using the Cauchy distribution as proposal, use the rejection algorithm to generate samples from the standard Gaussian distribution $e^{-x^2/2}/\sqrt{2\pi}$.   Implement a function in a programming language of your choice to sample Gaussian random variables using this scheme.
+% \item Would it be possible to work the other way round, i.e., use rejection sampling to produce Cauchy distributed draws from using a Gaussian proposal distribution?
+% \item Write code to implement the Box-Muller sampling algorithm described in class.  Frequently the BM-algorithm is cited as being slow due to the necessity to compute cosines and sines.  Use the rejection based method described in Problem 3.3 to obtain samples which have the same distribution as $(\cos(2\pi U_2), \sin(2\pi U_2))$.  Implement code to sample Gaussian random variables using this scheme.
+% \item Using timing functions provided in your language (or use the shell \texttt{time} command), calculate the time of execution for all three methods, after generating $10^6$ samples.  Which is the fastest?  Is this what you expected?
+% \item   Suppose we wish to sample a pair of Gaussian random variables $X_1$ and $X_2$ having means $\mu_i$, variances $\sigma^2_i$ and correlation $\rho$.  By assuming that the Cholesky decomposition of the covariance matrix is of the form
+%   $$
+%     C = \left(\begin{array}{cc} a_{11} & 0 \\ a_{21} & a_{22}\end{array}\right),
+%   $$
+%   find expressions for $a_{11}, a_{21}$ and $a_{22}$, and solve them to generate samples from $X_1$, $X_2$.
+% \end{enumerate}
+% \end{problem}
+\end{document}
