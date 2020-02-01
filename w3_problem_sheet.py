@@ -23,9 +23,9 @@ import numpy as np
 import scipy.special
 import scipy.optimize
 import scipy.integrate
+import scipy.stats
 import matplotlib
 import matplotlib.pyplot as plt
-import scipy.stats
 # -
 
 # +
@@ -35,9 +35,19 @@ matplotlib.rc('text', usetex=False)
 matplotlib.rc('figure', figsize=(14, 8))
 matplotlib.rc('lines', linewidth=2)
 matplotlib.rc('figure.subplot', hspace=.4)
+
+# Handy decorator
+def timeit(fun):
+    def fun_with_timer(*args, **kwargs):
+        t0 = time.time()
+        result = fun(*args, **kwargs)
+        t1 = time.time()
+        print("Time elapsed in {}: {}".format(fun.__name__, t1 - t0))
+        return result
+    return fun_with_timer
 # -
 
-# # Generalized Bernoulli distribution
+# # Problem 1: Generalized Bernoulli distribution
 
 # +
 def rand_bernoulli(probs, n):
@@ -58,7 +68,7 @@ pmf = [sum(x == i)/n for i in range(1, len(probs) + 1)]
 
 print(pmf)
 # -
-# # Sampling from $\text{Gamma}(k, \lambda)$
+# # Problem 2: Sampling from $\text{Gamma}(k, \lambda)$
 
 # +
 gamma = scipy.special.gamma
@@ -77,15 +87,6 @@ def gamma_pdf(x, lam, k):
 
 def cauchy_pdf(x):
     return 1/(np.pi*(1 + x**2))
-
-def timeit(fun):
-    def fun_with_timer(*args, **kwargs):
-        t0 = time.time()
-        result = fun(*args, **kwargs)
-        t1 = time.time()
-        print("Time elapsed in {}: {}".format(fun.__name__, t1 - t0))
-        return result
-    return fun_with_timer
 
 @timeit
 def gamma_reject(lam, k, n):
@@ -128,7 +129,7 @@ test(4.5)
 test(8.5, plot=True)
 # -
 
-# #  Calculating the area of Batman
+# # Problem 3: Monte Carlo simulation
 
 # +
 def batman_indicator(x, y):
@@ -282,7 +283,7 @@ exact_gain = 1 - (I*(4*Lx*Ly -E))/(E*(4*Lx*Ly - I))
 print("Observed and exact variance reduction:",
       "{:.3f}, {:.3f}.".format(var_c/Sigma[0, 0], exact_gain))
 # -
-# # Importance sampling
+# # Problem 5: Importance sampling
 
 # +
 pdf_double_exponential = lambda x: (1/2)*np.exp(-np.abs(x))
@@ -335,7 +336,7 @@ print("Variance without self-normalization: {}".format(np.var(estimators)))
 print("Variance with self-normalization: {}".format(np.var(estimators_sn)))
 # -
 
-# # Gambler's ruin
+# # Problem 6: Gambler's ruin
 
 # +
 def gamblers_ruin(b_fun, n, plot=False):
@@ -416,3 +417,68 @@ print_confidence(mean, var/n)
 # With improved importance sampling
 mean_im, var = gamblers_ruin(b_fun=lambda x: (x > 0)*b, n=n)
 print_confidence(mean_im, var/n)
+# -
+
+# # Problem 12: Sampling Gaussian random variables
+
+# +
+
+# The inverse method was implemented above, so here we will just use the
+# built-in function.
+
+@timeit
+def gauss_reject(n):
+    cauchy_pdf = lambda x: 1/(np.pi*(1+x**2))
+    gaussian_pdf = lambda x: 1/np.sqrt(2*np.pi) * np.exp(-x**2/2)
+    M = np.sqrt(2*np.pi/np.e)
+    n_total = int(n*M*1.2) + 1
+    x = np.random.standard_cauchy(n_total)
+    u = np.random.rand(n_total)
+    accept = np.nonzero(M*u <= gaussian_pdf(x)/cauchy_pdf(x))[0]
+    if len(accept) < n:
+        # Start over if we have not generated enough samples.
+        # This should not happen often.
+        print("Not enough accepts, {}/{}, recalulating...".
+              format(len(accept), n))
+        return gauss_reject(n)
+    return x[accept[:n]]
+
+@timeit
+def box_muller(n):
+    n = n // 2  # For simplicity, we assume n is even
+    u_1 = np.random.rand(n)
+    u_2 = np.random.rand(n)
+    x = np.sqrt(-2*np.log(u_1)) * np.cos(2*np.pi*u_2)
+    y = np.sqrt(-2*np.log(u_1)) * np.sin(2*np.pi*u_2)
+    return np.append(x, y)
+
+@timeit
+def box_muller_alternative(n):
+    n = n // 2
+
+    # Rejetion sampling to sample from the cicrcle
+    M = 4/np.pi
+    n_total = int(n*M*1.2) + 1
+    u_2, u_3 = np.random.uniform(-1, 1, (2, n_total))
+    dist_squared = u_2**2 + u_3**2
+    accept = np.nonzero(dist_squared <= 1)[0]
+    if len(accept) < n:
+        print("Not enough accepts, {}/{}, recalulating...".
+              format(len(accept), n))
+        return box_muller_improved(n)
+    dist = np.sqrt(dist_squared[accept][:n])
+    u_1 = np.random.rand(n)
+    x = np.sqrt(-2*np.log(u_1)) * u_2[accept][:n]/dist
+    y = np.sqrt(-2*np.log(u_1)) * u_3[accept][:n]/dist
+    return np.append(x, y)[:n]
+
+n = 10**6
+y1 = gauss_reject(n)
+y2 = box_muller(n)
+y3 = box_muller_alternative(n)
+
+# Check that the gaussian distribution
+print(scipy.stats.kstest(y1, 'norm', mode='asymp'))
+print(scipy.stats.kstest(y2, 'norm', mode='asymp'))
+print(scipy.stats.kstest(y3, 'norm', mode='asymp'))
+# -
