@@ -249,7 +249,7 @@ print_confidence("the CLT", np.mean(result_clt))
 print_confidence("Bikelis' theorem", np.mean(result_bikelis))
 print_confidence("Hoeffdings' theorem", np.mean(result_hoeffdings))
 # -
-# Variance reduction by variate
+# ## Variance reduction by control variate.
 
 # +
 def ellipse_indicator(x, y):
@@ -418,8 +418,81 @@ print_confidence(mean, var/n)
 mean_im, var = gamblers_ruin(b_fun=lambda x: (x > 0)*b, n=n)
 print_confidence(mean_im, var/n)
 # -
+# # Problem 7: Control variates
+
+# +
+# Exact probability
+a = 3
+I = 1 - scipy.stats.norm.cdf(a)
+
+# Quick computation to calculate good alpha
+n = 10**6
+fun = lambda x: (x > a)
+fun_control = lambda x: (x > 0) - 1/2
+z = np.random.randn(n)
+x, y = fun(z), fun_control(z)
+
+# Estimation of the optimal coefficient
+alpha = - np.cov(x, y)[0, 1] / np.var(y)
+
+# Estimators, with and without the control variate
+ns = np.arange(1, n + 1)
+In = np.cumsum(x) /ns
+In_c = np.cumsum(x + alpha*y) /ns
+
+# Estimation of the coefficient multiplying (1/n) in the variance of the
+# estimator
+sigma_f = np.var(x)
+sigma_fc = np.var(x + alpha*y)
+
+# The gain is insignificant!
+print(I, In[-1], In_c[-1])
+print(sigma_f, sigma_fc)
+# -
+
+# +
+# We can do better by using monomials
+def monomials(x, n=12):
+    # Double factorial
+    dfact = lambda n: (n <= 0) or n * dfact(n-2)
+    moment = lambda n: dfact(n - 1) if n % 2 == 0 else 0
+    # We divide by (n - 1)!! only to improve the conditioning of the system
+    # we'll have to solve below
+    return np.array([x**i - moment(i) for i in range(1, n + 1)])
+
+# Estimate the optimal coefficient (we could calculate the matrix exactly if we
+# wanted to)
+mons = monomials(z)
+extended = np.vstack((x, mons))
+mat = np.cov(extended)
+F, M = mat[0, 1:], mat[1:, 1:]
+alphas = - np.linalg.solve(M, F)
+
+# Estimator with better cnotrol variatns
+In_c_improved = np.cumsum(x + np.dot(alphas, mons))/ns
+sigma_fc_improved = np.var(x + np.dot(alphas, mons))
+
+# Here we obtain a modest gain, which is nice, but doesn't compensate the
+# additional computational cost coming from the calculation of the controls.
+print(I, In[-1], In_c[-1], In_c_improved[-1])
+print(sigma_f, sigma_fc, sigma_fc_improved)
+# -
+
+# +
+# Plot of the control variate
+fig, ax = plt.subplots()
+x_plot = np.linspace(2, 4, 200)
+control = np.dot(alphas, monomials(x_plot))
+ax.plot(x_plot, fun(x_plot), label="$f(x)$")
+ax.plot(x_plot, - control, label=r"$- \sum_i \alpha_i \, w_i(x)$")
+ax.set_xlabel("$x$")
+ax.legend()
+plt.show()
+# -
 
 # # Problem 8: Importance sampling with Gaussian mixture
+
+# +
 beta = 100
 x1, y1, x2, y2 = .5, -.01, .4, .5
 c1x, c1y, c2x, c2y = 1, .5, .75, 1
