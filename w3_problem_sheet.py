@@ -419,6 +419,90 @@ mean_im, var = gamblers_ruin(b_fun=lambda x: (x > 0)*b, n=n)
 print_confidence(mean_im, var/n)
 # -
 
+# # Problem 8: Importance sampling with Gaussian mixture
+beta = 100
+x1, y1, x2, y2 = .5, -.01, .4, .5
+c1x, c1y, c2x, c2y = 1, .5, .75, 1
+
+V1 = lambda x, y: c1x*(x - x1)**2 + c1y*(y - y1)**4
+V2 = lambda x, y: c2x*(x - x2)**2 + c2y*(y - y2)**4
+f = lambda x, y: np.exp(-beta*V1(x, y)) + np.exp(-beta*V2(x,y))
+
+# Exact value of the integral
+Z = scipy.integrate.dblquad(f, -1, 1, -1, 1)[0]
+
+# Monte Carlo
+n = 10**6
+x, y = np.random.uniform(-1, 1, (2, n))
+fxy = 4*f(x, y)
+sigma_f = np.var(fxy)
+
+# To plot the variance of the estimator, we could reproduce the experiment many
+# times and calculate the sample variance. To save computational time, here we
+# just estimate it as sigma_f^2 / n, where sigma_f is the variance of (4*f(X, Y))
+# where X and Y are uniformly distributed on [-1, 1] x [-1 , 1]
+def plot(fxy, sigma_f):
+    fig, ax = plt.subplots()
+    ns = np.arange(1, n + 1)
+    In = np.cumsum(fxy) / ns
+    truncate = 10**3
+    ns, In = ns[truncate + 1:], In[truncate + 1:]
+    ax.semilogx(ns, In, label="Monte Carlo estimator $\hat I_n$")
+    ax.semilogx(ns, In + sigma_f / np.sqrt(ns), color='k')
+    ax.semilogx(ns, In - sigma_f / np.sqrt(ns), color='k',
+                label=r"$\hat I_n \pm \sigma(\hat I_n)$")
+    ax.semilogx(ns, 0*ns + Z, color='red', label="Exact value $Z$")
+    ax.set_xlabel("$n$")
+    ax.set_ylim(Z - .1, Z + .1)
+    ax.legend(loc='upper right')
+    plt.show()
+
+plot(fxy, sigma_f)
+# -
+
+# +
+# With importance sampling
+
+def gaussian(mu, sigma):  # Here sigma is the standard deviation!
+    return lambda x: 1/np.sqrt(2*np.pi*sigma**2)*np.exp(-(x - mu)**2/(2*sigma**2))
+
+s1x = np.sqrt(1/beta)
+s1y = np.sqrt(2/beta)
+s2x = np.sqrt(1/(.75*beta))
+s2y = np.sqrt(1/beta)
+
+def importance_pdf(x, y):
+    g_1 = gaussian(x1, s1x)(x) * gaussian(y1, s1y)(y)
+    g_2 = gaussian(x2, s2x)(x) * gaussian(y2, s2y)(y)
+    return .5*g_1 + .5*g_2
+
+def rand_importance(n):
+    u = np.random.rand(n)
+    sample_from_1 = u <= .5
+    sample_from_2 = np.invert(sample_from_1)
+    indices_1 = np.where(sample_from_1)[0]
+    indices_2 = np.where(sample_from_2)[0]
+    n1 = len(indices_1)
+    n2 = len(indices_2)
+    g1x = x1 + s1x * np.random.randn(n1)
+    g1y = y1 + s1y * np.random.randn(n1)
+    g2x = x2 + s2x * np.random.randn(n2)
+    g2y = y2 + s2y * np.random.randn(n2)
+    result = np.zeros((2, n))
+    result[0][np.where(sample_from_1)] = g1x
+    result[1][np.where(sample_from_1)] = g1y
+    result[0][np.where(sample_from_2)] = g2x
+    result[1][np.where(sample_from_2)] = g2y
+    return result
+
+# Monte Carlo with importance sampling
+n = 10**6
+x, y = rand_importance(n)
+fxy_is = f(x, y) / importance_pdf(x, y)
+sigma_is = np.var(fxy_is)
+plot(fxy_is, sigma_is)
+# -
+
 # # Problem 12: Sampling Gaussian random variables
 
 # +
@@ -476,7 +560,9 @@ n = 10**6
 y1 = gauss_reject(n)
 y2 = box_muller(n)
 y3 = box_muller_alternative(n)
+# -
 
+# +
 # Check that the gaussian distribution
 print(scipy.stats.kstest(y1, 'norm', mode='asymp'))
 print(scipy.stats.kstest(y2, 'norm', mode='asymp'))
