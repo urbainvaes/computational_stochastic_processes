@@ -17,9 +17,9 @@ matplotlib.rc('figure', figsize=(14, 8))
 matplotlib.rc('lines', linewidth=2)
 matplotlib.rc('figure.subplot', hspace=.4)
 # -
-
 # # Fast simulation of stationary Gaussian processes
 
+# +
 # Autocoraviance of a stationary OU process
 def C(s):
     return np.exp(-s)
@@ -62,14 +62,13 @@ V = gp_dft(t, n_paths=10**5)
 cov = np.cov(V.T)
 
 fig, ax = plt.subplots()
-ax.plot(t, C(t), label="Exact autocovariance")
+ax.plot(t, C(t), label="Exact autocovariance $C(t)$")
 for i in range(n):
     y_plot = np.diag(cov, i)
     x_plot = np.zeros(len(y_plot)) + t[i]
     label = "Sample autocovariance" if i == 0 else None
     ax.scatter(x_plot, y_plot, color='k', label=label)
 ax.set_xlabel("$t$")
-ax.set_ylabel("$C(t)$")
 ax.legend()
 plt.show()
 # -
@@ -90,6 +89,7 @@ for i, n in enumerate(ns):
 fig, ax = plt.subplots()
 ax.loglog(ns, times, label="Execution time", marker='.')
 ax.set_xlabel("$n$")
+ax.set_ylabel("seconds")
 ax.legend()
 plt.show()
 # -
