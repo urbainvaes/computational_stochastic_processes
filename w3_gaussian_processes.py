@@ -288,7 +288,8 @@ plt.show()
 # \frac{2 \,\theta^2 \, \lambda_n}{\sigma^2} \phi_n(t) - 2 \phi_n(t) = \frac{2 \, \lambda_n}{\sigma^2} \, \phi_n''(t) \Leftrightarrow  \phi_n''(t) = \left(\theta^2 - \frac{\sigma^2}{\lambda_n}\right) \, \phi_n(t).
 # $$
 # Let us assume first that $\alpha_n^2 = \theta^2 - \frac{\sigma^2}{\lambda_n}$ is positive.
-# Then solutions are of the form $\phi_n = \sinh (\alpha_n t)$,
+# Then, employing the boundary condition $\phi_n(0) = 0$,
+# solutions are of the form $\phi_n = \sinh (\alpha_n t)$,
 # and substituting in the second boundary condition, we find that the $\alpha_n$ satisfy:
 # $$
 # \tanh(\alpha_n \, T) = - \frac{\alpha_n}{\theta}.

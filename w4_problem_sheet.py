@@ -23,9 +23,9 @@ import numpy as np
 import scipy.special
 import scipy.optimize
 import scipy.integrate
+import scipy.stats
 import matplotlib
 import matplotlib.pyplot as plt
-import scipy.stats
 # -
 
 # +
@@ -35,9 +35,19 @@ matplotlib.rc('text', usetex=False)
 matplotlib.rc('figure', figsize=(14, 8))
 matplotlib.rc('lines', linewidth=2)
 matplotlib.rc('figure.subplot', hspace=.4)
+
+# Handy decorator
+def timeit(fun):
+    def fun_with_timer(*args, **kwargs):
+        t0 = time.time()
+        result = fun(*args, **kwargs)
+        t1 = time.time()
+        print("Time elapsed in {}: {}".format(fun.__name__, t1 - t0))
+        return result
+    return fun_with_timer
 # -
 
-# # Generalized Bernoulli distribution
+# # Problem 1: Generalized Bernoulli distribution
 
 # +
 def rand_bernoulli(probs, n):
@@ -58,7 +68,7 @@ pmf = [sum(x == i)/n for i in range(1, len(probs) + 1)]
 
 print(pmf)
 # -
-# # Sampling from $\text{Gamma}(k, \lambda)$
+# # Problem 2: Sampling from $\text{Gamma}(k, \lambda)$
 
 # +
 gamma = scipy.special.gamma
@@ -77,15 +87,6 @@ def gamma_pdf(x, lam, k):
 
 def cauchy_pdf(x):
     return 1/(np.pi*(1 + x**2))
-
-def timeit(fun):
-    def fun_with_timer(*args, **kwargs):
-        t0 = time.time()
-        result = fun(*args, **kwargs)
-        t1 = time.time()
-        print("Time elapsed in {}: {}".format(fun.__name__, t1 - t0))
-        return result
-    return fun_with_timer
 
 @timeit
 def gamma_reject(lam, k, n):
@@ -128,7 +129,7 @@ test(4.5)
 test(8.5, plot=True)
 # -
 
-# #  Calculating the area of Batman
+# # Problem 3: Monte Carlo simulation
 
 # +
 def batman_indicator(x, y):
@@ -248,7 +249,7 @@ print_confidence("the CLT", np.mean(result_clt))
 print_confidence("Bikelis' theorem", np.mean(result_bikelis))
 print_confidence("Hoeffdings' theorem", np.mean(result_hoeffdings))
 # -
-# Variance reduction by variate
+# ## Variance reduction by control variate.
 
 # +
 def ellipse_indicator(x, y):
@@ -282,7 +283,7 @@ exact_gain = 1 - (I*(4*Lx*Ly -E))/(E*(4*Lx*Ly - I))
 print("Observed and exact variance reduction:",
       "{:.3f}, {:.3f}.".format(var_c/Sigma[0, 0], exact_gain))
 # -
-# # Importance sampling
+# # Problem 5: Importance sampling
 
 # +
 pdf_double_exponential = lambda x: (1/2)*np.exp(-np.abs(x))
@@ -335,7 +336,7 @@ print("Variance without self-normalization: {}".format(np.var(estimators)))
 print("Variance with self-normalization: {}".format(np.var(estimators_sn)))
 # -
 
-# # Gambler's ruin
+# # Problem 6: Gambler's ruin
 
 # +
 def gamblers_ruin(b_fun, n, plot=False):
@@ -416,3 +417,227 @@ print_confidence(mean, var/n)
 # With improved importance sampling
 mean_im, var = gamblers_ruin(b_fun=lambda x: (x > 0)*b, n=n)
 print_confidence(mean_im, var/n)
+# -
+# # Problem 7: Control variates
+
+# +
+# Exact probability
+a = 3
+I = 1 - scipy.stats.norm.cdf(a)
+
+# Quick computation to calculate good alpha
+n = 10**6
+fun = lambda x: (x > a)
+fun_control = lambda x: (x > 0) - 1/2
+z = np.random.randn(n)
+x, y = fun(z), fun_control(z)
+
+# Estimation of the optimal coefficient
+alpha = - np.cov(x, y)[0, 1] / np.var(y)
+
+# Estimators, with and without the control variate
+ns = np.arange(1, n + 1)
+In = np.cumsum(x) /ns
+In_c = np.cumsum(x + alpha*y) /ns
+
+# Estimation of the coefficient multiplying (1/n) in the variance of the
+# estimator
+sigma_f = np.var(x)
+sigma_fc = np.var(x + alpha*y)
+
+# The gain is insignificant!
+print(I, In[-1], In_c[-1])
+print(sigma_f, sigma_fc)
+# -
+
+# +
+# We can do better by using monomials
+def monomials(x, n=12):
+    # Double factorial
+    dfact = lambda n: (n <= 0) or n * dfact(n-2)
+    moment = lambda n: dfact(n - 1) if n % 2 == 0 else 0
+    # We divide by (n - 1)!! only to improve the conditioning of the system
+    # we'll have to solve below
+    return np.array([x**i - moment(i) for i in range(1, n + 1)])
+
+# Estimate the optimal coefficient (we could calculate the matrix exactly if we
+# wanted to)
+mons = monomials(z)
+extended = np.vstack((x, mons))
+mat = np.cov(extended)
+F, M = mat[0, 1:], mat[1:, 1:]
+alphas = - np.linalg.solve(M, F)
+
+# Estimator with better cnotrol variatns
+In_c_improved = np.cumsum(x + np.dot(alphas, mons))/ns
+sigma_fc_improved = np.var(x + np.dot(alphas, mons))
+
+# Here we obtain a modest gain, which is nice, but doesn't compensate the
+# additional computational cost coming from the calculation of the controls.
+print(I, In[-1], In_c[-1], In_c_improved[-1])
+print(sigma_f, sigma_fc, sigma_fc_improved)
+# -
+
+# +
+# Plot of the control variate
+fig, ax = plt.subplots()
+x_plot = np.linspace(2, 4, 200)
+control = np.dot(alphas, monomials(x_plot))
+ax.plot(x_plot, fun(x_plot), label="$f(x)$")
+ax.plot(x_plot, - control, label=r"$- \sum_i \alpha_i \, w_i(x)$")
+ax.set_xlabel("$x$")
+ax.legend()
+plt.show()
+# -
+
+# # Problem 8: Importance sampling with Gaussian mixture
+
+# +
+beta = 100
+x1, y1, x2, y2 = .5, -.01, .4, .5
+c1x, c1y, c2x, c2y = 1, .5, .75, 1
+
+V1 = lambda x, y: c1x*(x - x1)**2 + c1y*(y - y1)**4
+V2 = lambda x, y: c2x*(x - x2)**2 + c2y*(y - y2)**4
+f = lambda x, y: np.exp(-beta*V1(x, y)) + np.exp(-beta*V2(x,y))
+
+# Exact value of the integral
+Z = scipy.integrate.dblquad(f, -1, 1, -1, 1)[0]
+
+# Monte Carlo
+n = 10**6
+x, y = np.random.uniform(-1, 1, (2, n))
+fxy = 4*f(x, y)
+sigma_f = np.var(fxy)
+
+# To plot the variance of the estimator, we could reproduce the experiment many
+# times and calculate the sample variance. To save computational time, here we
+# just estimate it as sigma_f^2 / n, where sigma_f is the variance of (4*f(X, Y))
+# where X and Y are uniformly distributed on [-1, 1] x [-1 , 1]
+def plot(fxy, sigma_f):
+    fig, ax = plt.subplots()
+    ns = np.arange(1, n + 1)
+    In = np.cumsum(fxy) / ns
+    truncate = 10**3
+    ns, In = ns[truncate + 1:], In[truncate + 1:]
+    ax.semilogx(ns, In, label="Monte Carlo estimator $\hat I_n$")
+    ax.semilogx(ns, In + sigma_f / np.sqrt(ns), color='k')
+    ax.semilogx(ns, In - sigma_f / np.sqrt(ns), color='k',
+                label=r"$\hat I_n \pm \sigma(\hat I_n)$")
+    ax.semilogx(ns, 0*ns + Z, color='red', label="Exact value $Z$")
+    ax.set_xlabel("$n$")
+    ax.set_ylim(Z - .1, Z + .1)
+    ax.legend(loc='upper right')
+    plt.show()
+
+plot(fxy, sigma_f)
+# -
+
+# +
+# With importance sampling
+
+def gaussian(mu, sigma):  # Here sigma is the standard deviation!
+    return lambda x: 1/np.sqrt(2*np.pi*sigma**2)*np.exp(-(x - mu)**2/(2*sigma**2))
+
+s1x = np.sqrt(1/beta)
+s1y = np.sqrt(2/beta)
+s2x = np.sqrt(1/(.75*beta))
+s2y = np.sqrt(1/beta)
+
+def importance_pdf(x, y):
+    g_1 = gaussian(x1, s1x)(x) * gaussian(y1, s1y)(y)
+    g_2 = gaussian(x2, s2x)(x) * gaussian(y2, s2y)(y)
+    return .5*g_1 + .5*g_2
+
+def rand_importance(n):
+    u = np.random.rand(n)
+    sample_from_1 = u <= .5
+    sample_from_2 = np.invert(sample_from_1)
+    indices_1 = np.where(sample_from_1)[0]
+    indices_2 = np.where(sample_from_2)[0]
+    n1 = len(indices_1)
+    n2 = len(indices_2)
+    g1x = x1 + s1x * np.random.randn(n1)
+    g1y = y1 + s1y * np.random.randn(n1)
+    g2x = x2 + s2x * np.random.randn(n2)
+    g2y = y2 + s2y * np.random.randn(n2)
+    result = np.zeros((2, n))
+    result[0][np.where(sample_from_1)] = g1x
+    result[1][np.where(sample_from_1)] = g1y
+    result[0][np.where(sample_from_2)] = g2x
+    result[1][np.where(sample_from_2)] = g2y
+    return result
+
+# Monte Carlo with importance sampling
+n = 10**6
+x, y = rand_importance(n)
+fxy_is = f(x, y) / importance_pdf(x, y)
+sigma_is = np.var(fxy_is)
+plot(fxy_is, sigma_is)
+# -
+
+# # Problem 12: Sampling Gaussian random variables
+
+# +
+
+# The inverse method was implemented above, so here we will just use the
+# built-in function.
+
+@timeit
+def gauss_reject(n):
+    cauchy_pdf = lambda x: 1/(np.pi*(1+x**2))
+    gaussian_pdf = lambda x: 1/np.sqrt(2*np.pi) * np.exp(-x**2/2)
+    M = np.sqrt(2*np.pi/np.e)
+    n_total = int(n*M*1.2) + 1
+    x = np.random.standard_cauchy(n_total)
+    u = np.random.rand(n_total)
+    accept = np.nonzero(M*u <= gaussian_pdf(x)/cauchy_pdf(x))[0]
+    if len(accept) < n:
+        # Start over if we have not generated enough samples.
+        # This should not happen often.
+        print("Not enough accepts, {}/{}, recalulating...".
+              format(len(accept), n))
+        return gauss_reject(n)
+    return x[accept[:n]]
+
+@timeit
+def box_muller(n):
+    n = n // 2  # For simplicity, we assume n is even
+    u_1 = np.random.rand(n)
+    u_2 = np.random.rand(n)
+    x = np.sqrt(-2*np.log(u_1)) * np.cos(2*np.pi*u_2)
+    y = np.sqrt(-2*np.log(u_1)) * np.sin(2*np.pi*u_2)
+    return np.append(x, y)
+
+@timeit
+def box_muller_alternative(n):
+    n = n // 2
+
+    # Rejetion sampling to sample from the cicrcle
+    M = 4/np.pi
+    n_total = int(n*M*1.2) + 1
+    u_2, u_3 = np.random.uniform(-1, 1, (2, n_total))
+    dist_squared = u_2**2 + u_3**2
+    accept = np.nonzero(dist_squared <= 1)[0]
+    if len(accept) < n:
+        print("Not enough accepts, {}/{}, recalulating...".
+              format(len(accept), n))
+        return box_muller_improved(n)
+    dist = np.sqrt(dist_squared[accept][:n])
+    u_1 = np.random.rand(n)
+    x = np.sqrt(-2*np.log(u_1)) * u_2[accept][:n]/dist
+    y = np.sqrt(-2*np.log(u_1)) * u_3[accept][:n]/dist
+    return np.append(x, y)[:n]
+
+n = 10**6
+y1 = gauss_reject(n)
+y2 = box_muller(n)
+y3 = box_muller_alternative(n)
+# -
+
+# +
+# Check that the gaussian distribution
+print(scipy.stats.kstest(y1, 'norm', mode='asymp'))
+print(scipy.stats.kstest(y2, 'norm', mode='asymp'))
+print(scipy.stats.kstest(y3, 'norm', mode='asymp'))
+# -
