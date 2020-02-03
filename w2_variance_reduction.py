@@ -435,7 +435,7 @@ print(np.mean(hy), np.var(hy))
 # random variable and denote by $A$ the non-negative orthant $\mathbb R^N_{\geq 0}$,
 # then clearly $ I = 1 - \mathbb E(I_{A}(S))$. The PDF of $S$ is given by
 # $$
-# \pi(s_1, \dotsc, s_N) = \frac{1}{\sqrt{2\pi\sigma^2}} \, \exp \left(-\frac{1}{2\sigma^2} \, \left( (s_1 - s_0)^2 + (s_2 - s_1)^2 + \dotsb + (s_N - s_{N-1})^2 \right) \right).
+# \pi(s_1, \dotsc, s_N) = \left(\frac{1}{\sqrt{2\pi\sigma^2}}\right)^N \, \exp \left(-\frac{1}{2\sigma^2} \, \left( (s_1 - s_0)^2 + (s_2 - s_1)^2 + \dotsb + (s_N - s_{N-1})^2 \right) \right).
 # $$
 # In order to better estimate $I$, we will change the dynamics by adding a
 # negative drift term. More precisely, we will use as our important
@@ -447,7 +447,7 @@ print(np.mean(hy), np.var(hy))
 # for deterministic $b_i$ (the drift) that we still need to choose.
 # The associated PDF is given by:
 # $$
-# \psi(v_1, \dotsc, v_N) =  \frac{1}{\sqrt{2\pi\sigma^2}} \, \exp \left(-\frac{1}{2\sigma^2} \, \left( (v_1 - s_0 - b_1)^2 + (v_2 - v_1 - b_2)^2 + \dotsb + (v_N - v_{N-1} - b_N)^2 \right) \right).
+# \psi(v_1, \dotsc, v_N) =  \left(\frac{1}{\sqrt{2\pi\sigma^2}}\right)^N \, \exp \left(-\frac{1}{2\sigma^2} \, \left( (v_1 - s_0 - b_1)^2 + (v_2 - v_1 - b_2)^2 + \dotsb + (v_N - v_{N-1} - b_N)^2 \right) \right).
 # $$
 # The likelihood ratio can be calculated explicitly:
 # $$
