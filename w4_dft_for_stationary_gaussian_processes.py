@@ -6,7 +6,7 @@
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
-import timeit
+import time
 # -
 
 # +
@@ -20,13 +20,11 @@ matplotlib.rc('figure.subplot', hspace=.4)
 
 # # Fast simulation of stationary Gaussian processes
 
-
 # Autocoraviance of a stationary OU process
 def C(s):
     return np.exp(-s)
 
-
-def fast_gaussian(t, n_paths):
+def gp_dft(t, n_paths):
 
     # Number of discritization points
     n = len(t)
@@ -53,14 +51,14 @@ t = np.linspace(0, 1, n)
 
 # Plots
 fig, ax = plt.subplots()
-ax.plot(t, fast_gaussian(t, n_paths=20).T, marker='.')
+ax.plot(t, gp_dft(t, n_paths=20).T, marker='.')
 ax.set_xlabel("$x$")
 plt.show()
 # -
 
 # +
 # Check that the autocovariance function is right
-V = fast_gaussian(t, n_paths=10**5)
+V = gp_dft(t, n_paths=10**5)
 cov = np.cov(V.T)
 
 fig, ax = plt.subplots()
@@ -68,25 +66,30 @@ ax.plot(t, C(t), label="Exact autocovariance")
 for i in range(n):
     y_plot = np.diag(cov, i)
     x_plot = np.zeros(len(y_plot)) + t[i]
-    ax.scatter(x_plot, y_plot, label="Sample autocovariance")
+    label = "Sample autocovariance" if i == 0 else None
+    ax.scatter(x_plot, y_plot, color='k', label=label)
 ax.set_xlabel("$t$")
 ax.set_ylabel("$C(t)$")
+ax.legend()
 plt.show()
 # -
 
 # +
 # Calculate scaling with n
+def timed_gp_dft(*args, **kwargs):
+    t0 = time.time()
+    result = gp_dft(*args, **kwargs)
+    return result, time.time() - t0
+
 ns = np.logspace(1, 4, 20)
 ns = [int(n) for n in ns]
-
-
-def timeit(fun):
-    def fun_with_timer(*args, **kwargs):
-        t0 = time.time()
-        result = fun(*args, **kwargs)
-        t1 = time.time()
-        print("Time elapsed in {}: {}".format(fun.__name__, t1 - t0))
-        return result
-    return fun_with_timer
-
+times = np.zeros(len(ns))
+for i, n in enumerate(ns):
+    t = np.linspace(0, 1, n)
+    _, times[i] = timed_gp_dft(t, 100)
+fig, ax = plt.subplots()
+ax.loglog(ns, times, label="Execution time", marker='.')
+ax.set_xlabel("$n$")
+ax.legend()
+plt.show()
 # -
