@@ -12,7 +12,6 @@ import time
 # +
 matplotlib.rc('font', size=20)
 matplotlib.rc('font', family='serif')
-matplotlib.rc('text', usetex=False)
 matplotlib.rc('figure', figsize=(14, 8))
 matplotlib.rc('lines', linewidth=2)
 matplotlib.rc('figure.subplot', hspace=.4)
@@ -80,7 +79,7 @@ def timed_gp_dft(*args, **kwargs):
     result = gp_dft(*args, **kwargs)
     return result, time.time() - t0
 
-ns = np.logspace(1, 4, 20)
+ns = np.logspace(1, 6, 20)
 ns = [int(n) for n in ns]
 times = np.zeros(len(ns))
 for i, n in enumerate(ns):
