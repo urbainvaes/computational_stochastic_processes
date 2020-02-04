@@ -79,7 +79,7 @@ def timed_gp_dft(*args, **kwargs):
     result = gp_dft(*args, **kwargs)
     return result, time.time() - t0
 
-ns = np.logspace(1, 6, 20)
+ns = np.logspace(1, 5, 20)
 ns = [int(n) for n in ns]
 times = np.zeros(len(ns))
 for i, n in enumerate(ns):
