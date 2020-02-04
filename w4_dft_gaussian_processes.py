@@ -73,7 +73,6 @@ plt.show()
 # -
 
 # +
-
 # Calculate scaling with n
 def timed_gp_dft(*args, **kwargs):
     t0 = time.time()
