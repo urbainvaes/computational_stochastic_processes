@@ -1,4 +1,4 @@
-#+
+# +
 # Copyright (c) 2020 Urbain Vaes. All rights reserved.
 #
 # This work is licensed under the terms of the MIT license.
@@ -51,7 +51,7 @@ t = np.linspace(0, 1, n)
 # Plots
 fig, ax = plt.subplots()
 ax.plot(t, gp_dft(t, n_paths=20).T, marker='.')
-ax.set_xlabel("$x$")
+ax.set_xlabel("$t$")
 plt.show()
 # -
 
@@ -78,6 +78,7 @@ def timed_gp_dft(*args, **kwargs):
     t0 = time.time()
     result = gp_dft(*args, **kwargs)
     return result, time.time() - t0
+
 
 ns = np.logspace(1, 5, 20)
 ns = [int(n) for n in ns]
