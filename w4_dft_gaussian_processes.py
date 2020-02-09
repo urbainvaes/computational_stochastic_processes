@@ -1,4 +1,4 @@
-#+
+# +
 # Copyright (c) 2020 Urbain Vaes. All rights reserved.
 #
 # This work is licensed under the terms of the MIT license.
