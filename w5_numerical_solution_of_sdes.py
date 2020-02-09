@@ -6,7 +6,6 @@
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
-import time
 # -
 
 # +
@@ -186,7 +185,7 @@ def plot_errors(Δts, errors, error_type, method):
     # Plot
     fig, ax = plt.subplots()
     ax.set_title("{} error of the {} scheme".format(error_type, method))
-    if error_type == "strong":
+    if error_type == "Strong":
         ylabel = r"$\sup \{ |X^{\Delta t}_n  - X_{n \Delta t}|:" \
                 + "n \Delta t \in [0, T] \}$"
     elif error_type == "Weak":
@@ -209,7 +208,7 @@ def calculate_strong_convergence(method):
                                      method=method, diff_prime=diff_prime)
         x_exact = exact_solution(t, w)
         strong_errors[i] = strong_error(x, x_exact)
-    plot_errors(T/ns, strong_errors, "strong", method)
+    plot_errors(T/ns, strong_errors, "Strong", method)
 
 
 calculate_strong_convergence("EM")
@@ -236,9 +235,6 @@ ns = np.array([int(n) for n in ns])
 weak_errors = np.zeros(len_ns)
 
 # Simulation parameters
-T, n, m = 1, 100, 3
-
-# Vector of times
 t = np.linspace(0, T, n + 1)
 
 # Parameters
