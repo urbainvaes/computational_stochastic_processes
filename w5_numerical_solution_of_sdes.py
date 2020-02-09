@@ -78,7 +78,7 @@ T, n, m = 5, 100, 20
 # Vector of times
 t = np.linspace(0, T, n + 1)
 # -
-# We first illustrate the Euler--Maruyama for the Ornstein–Uhlenbeck process
+# We first illustrate the Euler-Maruyama for the Ornstein–Uhlenbeck process
 # $$
 # \newcommand{\d}{\mathrm d}
 # \newcommand{\e}{\mathrm e}
@@ -153,13 +153,12 @@ ax.set_prop_cycle(None)
 ax.plot(t, exact_solution(t, w), linestyle="--")
 plt.show()
 # -
-# We calculate the strong order of convergence by looking at the dependence on the time step $\Delta t$ of the strong error:
+# We calculate the strong order of convergence by looking at the dependence on the time step $\Delta t$ of the total strong error:
 # $$
-# \varepsilon = \mathbb E \left[ \sup_{n \Delta t \leq T} |X^{\Delta t}_n - X_{n\Delta t}| \right],
+# \varepsilon = \mathbb E \left[ \sup_{n \Delta t \leq T} |X^{\Delta t}_n - X_{n\Delta t}| \right].
 # $$
-# where $X_t$ denotes the exact solution and $X^{\Delta t}_n$
-# denotes the numerical solution at step $n$,
-# where $\Delta t$ is used as the time step.
+# Here $X_t$ denotes the exact solution and $X^{\Delta t}_n$
+# denotes the numerical solution with time step $\Delta t$ at step $n$
 # An alternative would have been to look at the strong error
 # at the final time:
 # $$
@@ -167,17 +166,7 @@ plt.show()
 # $$
 
 # +
-def strong_error(x, x_exact):
-    sup_interval = np.max(np.abs(x - x_exact), axis=0)
-    return np.mean(sup_interval)
-
-
-m, len_ns = 300, 10
-ns = np.logspace(2, 4, len_ns)
-ns = np.array([int(n) for n in ns])
-strong_errors = np.zeros(len_ns)
-
-
+# Auxiliary function to plot the error
 def plot_errors(Δts, errors, error_type, method):
     # Fit to estimate order of convergence
     coeffs = np.polyfit(np.log2(Δts), np.log2(errors), 1)
@@ -201,7 +190,16 @@ def plot_errors(Δts, errors, error_type, method):
     ax.legend()
     plt.show()
 
-def calculate_strong_convergence(method):
+def strong_error(x, x_exact):
+    sup_interval = np.max(np.abs(x - x_exact), axis=0)
+    return np.mean(sup_interval)
+
+m, len_ns = 300, 10
+ns = np.logspace(2, 4, len_ns)
+ns = np.array([int(n) for n in ns])
+strong_errors = np.zeros(len_ns)
+
+def calculate_strong_order(method):
     for i, n in enumerate(ns):
         t = np.linspace(0, T, n)
         x, w = stochastic_integrator(t, x0, drift, diff, m,
@@ -210,9 +208,8 @@ def calculate_strong_convergence(method):
         strong_errors[i] = strong_error(x, x_exact)
     plot_errors(T/ns, strong_errors, "Strong", method)
 
-
-calculate_strong_convergence("EM")
-calculate_strong_convergence("Milstein")
+calculate_strong_order("EM")
+calculate_strong_order("Milstein")
 # -
 # # Weak order of convergence
 # Here we consider again geometric Brownian motion, and we
@@ -227,8 +224,9 @@ calculate_strong_convergence("Milstein")
 # For this reason, we select below parameters such that the system is only a
 # little noisy - the deterministic part of the dynamics dominates.
 # Our choice of the parameters $\mu$ and $\sigma$ is taken from Des Higham's
-# [introduction to the numerical solution of stochastic differential equations]
-# (https://epubs.siam.org/doi/pdf/10.1137/S0036144500378302).
+# [introduction to the numerical solution of stochastic differential equations](https://epubs.siam.org/doi/pdf/10.1137/S0036144500378302).
+
+# +
 m, len_ns = 10**5, 5
 ns = np.logspace(1, 3, len_ns)
 ns = np.array([int(n) for n in ns])
@@ -245,7 +243,7 @@ drift = lambda x: mu*x
 diff = lambda x: sigma*x
 diff_prime = lambda x: sigma
 
-def calculate_weak_convergence(method):
+def calculate_weak_order(method):
     for i, n in enumerate(ns):
         t = np.linspace(0, T, n)
 
@@ -257,7 +255,7 @@ def calculate_weak_convergence(method):
                 diff_prime=diff_prime, save_paths=False)
         exact_expectation = np.exp(mu*T)
         weak_errors[i] = np.mean(np.abs(exact_expectation - np.mean(result)))
-        print(weak_errors)
     plot_errors(T/ns, weak_errors, "Weak", method)
 
-calculate_weak_convergence("EM")
+calculate_weak_order("EM")
+calculate_weak_order("Milstein")
