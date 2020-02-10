@@ -86,6 +86,10 @@ t = np.linspace(0, T, n + 1)
 # \newcommand{\var}{\mathrm{var}}
 # \d X_t = \theta (\mu -  X_t) \, \d t + \sigma \, \d W_t.
 # $$
+# Using Itô's isometry, we calculate
+# $$
+# \cov(X_s, X_t) = \var(X_0) \, \e^{-\theta (t + s)} + \frac{\sigma^2}{2\theta} (\e^{-\theta |t - s|} - \e^{-\theta(t+s)} ).
+# $$
 
 # +
 # Parameters for the OU process
@@ -96,8 +100,8 @@ drift = lambda x: theta*(mu - x)
 diff = lambda x: sigma
 
 # Initial condition, here ~ N(1, 1/25)
-s = 1/5
-x0 = lambda m: 1 + s*np.random.randn(m)
+m0, s0 = 1, 1/5
+x0 = lambda m: m0 + s0*np.random.randn(m)
 
 # Calculate solution by stochastic_integrator
 x, _ = stochastic_integrator(t, x0, drift, diff, m)
@@ -107,6 +111,21 @@ fig, ax = plt.subplots()
 ax.set_title("Ornstein–Uhlenbeck process")
 ax.set_xlabel("$t$")
 ax.plot(t, x)
+plt.show()
+
+# Compare with exact moments
+fig, ax = plt.subplots()
+x, _ = stochastic_integrator(t, x0, drift, diff, 10**3)
+exact_mean = mu + np.exp(-theta*t)*(m0 - mu)
+exact_var = s0**2 * np.exp(-2*theta*t) + sigma**2/2/theta * (1 - np.exp(-2*theta*t))
+ax.set_title("Moments of the solution (dashed = exact)")
+ax.set_xlabel("$t$")
+ax.plot(t, np.mean(x, axis=1))
+ax.plot(t, np.var(x, axis=1))
+# Reset color cycle
+ax.set_prop_cycle(None)
+ax.plot(t, exact_mean, linestyle="--")
+ax.plot(t, exact_var, linestyle="--")
 plt.show()
 # -
 # # Strong order of convergence
@@ -148,7 +167,6 @@ fig, ax = plt.subplots()
 ax.set_xlabel("$t$")
 ax.set_title("Geometric Brownian motion (dashed = exact)")
 ax.plot(t, x)
-# Reset color cycle
 ax.set_prop_cycle(None)
 ax.plot(t, exact_solution(t, w), linestyle="--")
 plt.show()
