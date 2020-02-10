@@ -196,7 +196,7 @@ def plot_errors(Δts, errors, error_type, method):
         ylabel = r"$\sup \{ |X^{\Delta t}_n  - X_{n \Delta t}|:" \
                 + "n \Delta t \in [0, T] \}$"
     elif error_type == "Weak":
-        ylabel = r"$|E[f(X^{\Delta}_{T/\Delta}] - E[f(X_t)] |$"
+        ylabel = r"$|E[f(X^{\Delta t}_{T/\Delta t}] - E[f(X_t)] |$"
     ax.set_xlabel(r"$\Delta t$")
     ax.set_ylabel(ylabel)
     ax.set_xscale('log', basex=2)
