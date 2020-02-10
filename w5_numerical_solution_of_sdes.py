@@ -77,6 +77,7 @@ T, n, m = 5, 100, 20
 
 # Vector of times
 t = np.linspace(0, T, n + 1)
+
 # -
 # We first illustrate the Euler-Maruyama for the Ornstein–Uhlenbeck process
 # $$
@@ -86,10 +87,27 @@ t = np.linspace(0, T, n + 1)
 # \newcommand{\var}{\mathrm{var}}
 # \d X_t = \theta (\mu -  X_t) \, \d t + \sigma \, \d W_t.
 # $$
-# Using Itô's isometry, we calculate
+# During the lecture, we showed that the solution to this equation is given by
 # $$
-# \cov(X_s, X_t) = \var(X_0) \, \e^{-\theta (t + s)} + \frac{\sigma^2}{2\theta} (\e^{-\theta |t - s|} - \e^{-\theta(t+s)} ).
+# X_t = \mu + \e^{-\theta t} (X_0 - \mu) + \int_0^t \e^{-\theta (t - s)} \, \d W_s.
 # $$
+# It is clear that the of the solution is $\mu(t) = \mu + \e^{-\theta t} (\mathbb E[X_0] - \mu)$.
+# Employing the fact that the initial condition is independent of the Brownian
+# motion (which we always assume so that the hypotheses of the theorem on the
+# existence and uniqueness of a strong solution are satisfied) 
+# and using Itô's isometry,
+# we calculate, for $t \geq s$
+# $$
+# \begin{aligned}
+# \cov(X_s, X_t)
+# &= \var(X_0) \, \e^{-\theta (t + s)} + \sigma^2 \, \e^{-\theta (t + s)} \, \mathbb E \left[\int_0^s e^{\theta u} \, \d W_u \, \int_0^t e^{\theta u} \, \d W_u \right] \\
+# &= \var(X_0) \, \e^{-\theta (t + s)} + \sigma^2 \, \e^{-\theta (t + s)} \, \mathbb E \left[\int_0^s e^{\theta u} \, I_{[0, s]}(u) \, \d W_u \, \int_0^t e^{\theta u} \, \d W_u \right] \\
+# &= \var(X_0) \, \e^{-\theta (t + s)} + \sigma^2 \, \e^{-\theta (t + s)} \, \int_0^t \e^{2 \theta \, u} \, I_{[0, s]}(u) \, \d u \\
+# &= \var(X_0) \, \e^{-\theta (t + s)} + \frac{\sigma^2}{2\theta} \, (\e^{-\theta (t - s)} - \e^{-\theta (t + s)}).
+# \end{aligned}
+# $$
+# Since $\cov(X_s, X_t)$ must be symmetric, we deduce that in general
+# $\cov(X_s, X_t) = \var(X_0) \, \e^{-\theta (t + s)} + \frac{\sigma^2}{2\theta} \, (\e^{-\theta |t - s|} - \e^{-\theta (t + s)})$.
 
 # +
 # Parameters for the OU process
