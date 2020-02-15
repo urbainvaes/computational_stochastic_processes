@@ -94,7 +94,7 @@ t = np.linspace(0, T, n + 1)
 # It is clear that the of the solution is $\mu(t) = \mu + \e^{-\theta t} (\mathbb E[X_0] - \mu)$.
 # Employing the fact that the initial condition is independent of the Brownian
 # motion (which we always assume so that the hypotheses of the theorem on the
-# existence and uniqueness of a strong solution are satisfied) 
+# existence and uniqueness of a strong solution are satisfied)
 # and using Itô's isometry,
 # we calculate, for $t \geq s$
 # $$
@@ -295,3 +295,55 @@ def calculate_weak_order(method):
 
 calculate_weak_order("EM")
 calculate_weak_order("Milstein")
+# -
+# # Mean-square stability
+# We saw during the lecture that a necessary and sufficent condition for the
+# Euler-Maruyama approximation of geometric Brownian motion to be mean-square
+# stable is that $2 \mu + \sigma^2 + \mu^2 \Delta t < 0$,
+# or equivalently $2 \mu \Delta t + \sigma^2 \Delta t + \mu^2 \Delta t^2 < 0$.
+# Below we plot the stability region.
+# (Here we restrict our attention to real $\mu$ and $\sigma$.)
+
+# +
+fig, ax = plt.subplots()
+x = np.linspace(-2.5, 1, 200)  # x is μ Δt
+y = np.maximum(0, - 2*x)  # y is σ² Δt
+ax.plot(x, y, label="Exact solution")
+ax.fill_between(x, 0*x, y, alpha=.2)
+y = np.maximum(0, - 2*x - x**2)
+ax.plot(x, y, label="Euler-Maruyama approximation")
+ax.fill_between(x, 0*x, y, alpha=.2)
+ax.set_title(r"Region of mean-square stability of geometric Brownian motion")
+ax.set_ylabel(r"$\sigma^2 \, \Delta t$")
+ax.set_xlabel(r"$\mu \, \Delta t$")
+ax.set_xlim(-2.5, 1)
+ax.set_ylim(0, 2.5)
+ax.legend()
+plt.show()
+# -
+# For the stochastic theta-method, the mean-square stability condition can be
+# shown to be the following (exercise!):
+# $$
+# \frac{|1 + (1-\theta)\mu \Delta t|^2 + \sigma^2 \Delta t}{|1 - \theta \mu \Delta t|^2} < 1.
+# $$
+# Below we plot the stability region for several values of $\theta$.
+# Note that the stability region becomes larger and larger as $\theta$ increases,
+# and that coincides with that of the exact solution for $\theta = .5$.
+
+# +
+fig, ax = plt.subplots()
+thetas = [0, .25, .5, .75, 1]
+x = np.linspace(-2.5, 1, 200)  #
+y = np.maximum(0, - 2*x)  #
+for theta in np.flip(thetas):
+    y = np.maximum(0, (1 - theta*x)**2 - (1 + (1 - theta)*x)**2)
+    ax.plot(x, y, label=r"$\theta$-method with $\theta = {}$".format(theta))
+    ax.fill_between(x, 0*y, y, alpha=.2)
+ax.set_title(r"Region of mean-square stability of geometric Brownian motion")
+ax.set_ylabel(r"$\sigma^2 \, \Delta t$")
+ax.set_xlabel(r"$\mu \, \Delta t$")
+ax.set_xlim(-2.5, 1)
+ax.set_ylim(0, 2.5)
+ax.legend()
+plt.show()
+# -
