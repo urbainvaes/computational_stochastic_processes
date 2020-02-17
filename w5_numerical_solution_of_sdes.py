@@ -328,7 +328,7 @@ plt.show()
 # $$
 # Below we plot the stability region for several values of $\theta$.
 # Note that the stability region becomes larger and larger as $\theta$ increases,
-# and that coincides with that of the exact solution for $\theta = .5$.
+# and that it coincides with that of the exact solution for $\theta = .5$.
 
 # +
 fig, ax = plt.subplots()
