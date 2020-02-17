@@ -13,9 +13,9 @@ import matplotlib.animation as animation
 # +
 matplotlib.rc('font', size=20)
 matplotlib.rc('font', family='serif')
-matplotlib.rc('figure', figsize=(14, 8))
+matplotlib.rc('figure', figsize=(12, 8))
 matplotlib.rc('lines', linewidth=2)
-matplotlib.rc('lines', markersize=10)
+matplotlib.rc('lines', markersize=12)
 matplotlib.rc('figure.subplot', hspace=.4)
 matplotlib.rc('animation', html='html5')
 # -
@@ -60,24 +60,68 @@ matplotlib.rc('animation', html='html5')
 # which can be calculated from the CDF a normally-distributed random variable.
 
 # +
-L, n = 3, 400
+
+def initial_condition(x):
+    return (x >= -1)*(x <= 1)
 
 def exact_solution(t, x):
     cdf = scipy.stats.norm.cdf
     return cdf((1 + x) / np.sqrt(2*t)) - cdf((-1 + x) / np.sqrt(2*t))
 
+# Vector of times at which we will plot the exact and Monte Carlo solutions
+T, N = 0, 100
+t = np.linspace(0, 1, N + 1)
+Δt = t[1] - t[0]
+
+# Approximation by a Monte Carlo method
+
+# We'll approximate the solution at discrete time points
+L, n, n_mc = 3, 400, 20
+x_mc = np.linspace(-L, L, n_mc)
+
+# We will use the same Brownian motions in our Monte Carlo estimator at each
+# point, in order to parallelize the code more easily, but this is not
+# required.
+M = 10**3
+ws = np.vstack((np.zeros(M), np.random.randn(N, M)))
+ws = np.sqrt(Δt) * np.cumsum(ws, axis=0)
+
+# Array to store the results of MC estimation
+mc_estimator = np.zeros((n_mc, N + 1))
+for i, xi in enumerate(x_mc):
+    mc_estimator[i] = np.mean(initial_condition(xi + np.sqrt(2)*ws), axis=1)
+
 x = np.linspace(-L, L, n)
 fig, ax = plt.subplots()
-def plot_time(t):
-    ax.clear()
-    ax.plot(x, exact_solution(t, x))
+ax.set_title("Solving the heat equation by a Monte Carlo method")
+
+# The variables employed in plot_time need to be defined globally
+line, line_mc, text = None, None, None
+
+def plot_time(i):
+    global line, line_mc, text
+
+    if i == 0:
+        line, = ax.plot(x, initial_condition(x))
+        line_mc, = ax.plot(x_mc, mc_estimator[:, i], linestyle='', marker='.')
+        text = ax.text(.1, .9, r"$t = {:.4f}$".format(0),
+                       fontsize=18, horizontalalignment='center',
+                       verticalalignment='center', transform=ax.transAxes)
+    else:
+        line.set_ydata(exact_solution(t[i], x))
+        line_mc.set_ydata(mc_estimator[:, i])
+        text.set_text(r"$t = {:.4f}$".format(t[i]))
 
 def do_nothing():
     pass
 
-t = np.linspace(.01, 1, 100)
-anim = animation.FuncAnimation(fig, plot_time, t,
-                               init_func=do_nothing, repeat=False)
+anim = animation.FuncAnimation(fig, plot_time, list(range(N + 1)),
+                               init_func=do_nothing, repeat=True)
+
+# For the Jupyter notebook
 plt.close(fig)
 anim
+
+# For python
+# plt.show()
 # -
