@@ -13,10 +13,10 @@ import matplotlib.animation as animation
 # +
 matplotlib.rc('font', size=20)
 matplotlib.rc('font', family='serif')
-matplotlib.rc('figure', figsize=(12, 8))
+matplotlib.rc('figure', figsize=(13, 8))
 matplotlib.rc('lines', linewidth=2)
 matplotlib.rc('lines', markersize=12)
-matplotlib.rc('figure.subplot', hspace=.4)
+matplotlib.rc('figure.subplot', hspace=.1)
 matplotlib.rc('animation', html='html5')
 # -
 # # The Feynman-Kac formula
@@ -75,18 +75,17 @@ t = np.linspace(0, 1, N + 1)
 
 # Approximation by a Monte Carlo method
 
-# We'll approximate the solution at discrete time points
+# We'll approximate the solution at a small number of space points
 L, n, n_mc = 3, 400, 20
 x_mc = np.linspace(-L, L, n_mc)
 
 # We will use the same Brownian motions in our Monte Carlo estimator at each
-# point, in order to parallelize the code more easily, but this is not
-# required.
+# space point, but this is not necessary.
 M = 10**3
 ws = np.vstack((np.zeros(M), np.random.randn(N, M)))
 ws = np.sqrt(Δt) * np.cumsum(ws, axis=0)
 
-# Array to store the results of MC estimation
+# Array to store the results of the MC estimation
 mc_estimator = np.zeros((n_mc, N + 1))
 for i, xi in enumerate(x_mc):
     mc_estimator[i] = np.mean(initial_condition(xi + np.sqrt(2)*ws), axis=1)
@@ -94,16 +93,22 @@ for i, xi in enumerate(x_mc):
 x = np.linspace(-L, L, n)
 fig, ax = plt.subplots()
 ax.set_title("Solving the heat equation by a Monte Carlo method")
+fig.subplots_adjust(left=.05, bottom=.1, right=.98, top=.98)
 
 # The variables employed in plot_time need to be defined globally
 line, line_mc, text = None, None, None
 
+# Function to plot the exact and approximate solutions at the i-th time step
 def plot_time(i):
     global line, line_mc, text
 
     if i == 0:
-        line, = ax.plot(x, initial_condition(x))
-        line_mc, = ax.plot(x_mc, mc_estimator[:, i], linestyle='', marker='.')
+        ax.clear()
+        line, = ax.plot(x, initial_condition(x), label="Exact solution")
+        line_mc, = ax.plot(x_mc, mc_estimator[:, i], linestyle='', marker='.',
+                           label="Monte Carlo solution")
+        ax.legend()
+        ax.set_xlabel('$x$')
         text = ax.text(.1, .9, r"$t = {:.4f}$".format(0),
                        fontsize=18, horizontalalignment='center',
                        verticalalignment='center', transform=ax.transAxes)
@@ -115,6 +120,7 @@ def plot_time(i):
 def do_nothing():
     pass
 
+# Create animation
 anim = animation.FuncAnimation(fig, plot_time, list(range(N + 1)),
                                init_func=do_nothing, repeat=True)
 
