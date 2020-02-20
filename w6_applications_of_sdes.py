@@ -136,6 +136,7 @@ anim
 # $$
 # \newcommand{\d}{\mathrm d}
 # \newcommand{\expect}{\mathbb E}
+# \newcommand{\proba}{\mathbb P}
 # \d X_t = b(X_t) \, \d t + \sigma \, \d W_t, \qquad X_0 = x_0.
 # $$
 # The update formula of the Euler-Maruyama scheme for this equation is the following:
@@ -196,7 +197,116 @@ anim
 # so it does not make sense to consider their density with respect to a Lebesgue measure and to define $M(X_t)$ as a ratio,
 # which is why Girsanov's theorem is useful.
 #
-# Below we employ this result to estimate the probability that a Brownian motion exceeds a certain threshold:
-# this is the continuous counterpart of the gambler's ruin.
+# Below we employ this result to estimate the probability that $Y_t = x_0 + \sigma W_t$ exceeds a certain threshold $M$ for some $t \in [0, T]$:
+# this is the continuous counterpart of the gambler's ruin. By the [reflection principle](https://en.wikipedia.org/wiki/Reflection_principle_(Wiener_process)),
+# this probability is equal
+# $$
+# \proba \left[\sup_{0 \leq t \leq T} Y_t \geq M \right]
+#   = 2 \proba \left[ Y_T \geq M \right]
+#   = 2\left(1 -  \Phi\left(\frac{M-x_0}{\sigma \sqrt{T}}\right)\right),
+# $$
+# where $\Phi$ is the Gaussian CDF.
+# For simplicity, we will take $x_0 = 0$ and $T = 1$.
 
 # +
+# Parameters
+x0, T, sigma, M = 0, 1, 2, 6
+
+# Exact value of probability
+P = 2 * (1 - scipy.stats.norm.cdf((M - x0)/(sigma*np.sqrt(T))))
+
+# Indicator functions of which we want to calculate the expectation
+def f(x):
+    return (np.max(x, axis=0) >= M)*1.
+
+def importance_sampling(b_fun, m, N, plot=False):
+    # N is the number of discretization points and m is the number of samples.
+
+    # Time and Brownian increments
+    Δt = T/N
+
+    # Likelihood ratio
+    def g(x):
+        n_paths = x.shape[1]
+        result = np.zeros(n_paths)
+        for i in range(N):
+            bi = b_fun(x[i, :])
+            result += bi * (x[i + 1, :] - x[i, :]) - (1/2) * bi**2 * Δt
+        return np.exp(-(1/sigma**2) * result)
+
+    m_per_slice = 10**4
+    n_slices = m // m_per_slice
+    m = m_per_slice * n_slices
+    mn, qn = 0, 0
+
+    for i in range(n_slices):
+        print(i)
+
+        # Brownian increments
+        Δw = np.sqrt(Δt) * np.random.randn(N, m_per_slice)
+
+        # We store the initial condition in x too
+        x = np.zeros((N + 1, m_per_slice))
+
+        # Set initial condition
+        x[0, :] = x0
+
+        for j in range(N):
+            x[j + 1] = x[j] + b_fun(x[j]) * Δt + sigma * Δw[j]
+
+        # Evaluate target function and likelihood ratio
+        fx, gx = f(x), g(x)
+        mn = 1/(i+1) * (mn*i + np.mean(fx*gx))
+        qn = 1/(i+1) * (qn*i + np.mean((fx*gx)**2))
+
+    if plot:
+        n_samples = 20
+        fig, ax = plt.subplots()
+        t = np.linspace(0, T, N + 1)
+        ax.plot(t, x[:, :n_samples], marker='.')
+        ax.plot(t, np.zeros(N + 1), linestyle='--', color='k')
+        ax.set_xlabel("$t$")
+        plt.show()
+
+    return mn, n/(n - 1) * (qn - mn**2)
+
+def print_confidence(m, v):
+    a = scipy.stats.norm.ppf(.975)
+    # or 'manually'...
+    # a = np.sqrt(2)*scipy.special.erfinv(.95)
+    print("95% confidence interval for the probability of ruin: [{:0.6f}, {:0.6f}]"
+            .format(m - a*np.sqrt(v), m + a*np.sqrt(v)))
+
+# Number of samples
+N, m = 10, 10**6
+
+# Default parameter
+b = M/T
+
+# Print exact value
+print("Exact value of the probability: {0:0.06f}".format(P))
+
+# Without importance sampling
+mean, var = importance_sampling(b_fun=lambda x: 0, m=m, N=N)
+print_confidence(mean, var/m)
+
+# With improved importance sampling
+mean_im, var = importance_sampling(b_fun=lambda x: (x < M)*b, m=m, N=N)
+print_confidence(mean_im, var/m)
+
+# Here the error induced by the fact that we are calculating the supremum based
+# on only a finite number of discretization points dominates.
+# -
+
+# +
+# To obtain a better estimate, we reduce the time step
+N = 10**3
+
+# Without importance sampling
+mean, var = importance_sampling(b_fun=lambda x: 0, m=m, N=N)
+print_confidence(mean, var/m)
+
+# With improved importance sampling
+mean_im, var = importance_sampling(b_fun=lambda x: (x < M)*b, m=m, N=N)
+print_confidence(mean_im, var/m)
+# -
