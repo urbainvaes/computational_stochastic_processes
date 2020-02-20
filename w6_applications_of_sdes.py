@@ -201,7 +201,7 @@ anim
 # this is the continuous counterpart of the gambler's ruin. By the [reflection principle](https://en.wikipedia.org/wiki/Reflection_principle_(Wiener_process)),
 # this probability is equal
 # $$
-# \proba \left[\sup_{0 \leq t \leq T} Y_t \geq M \right]
+# P := \proba \left[\sup_{0 \leq t \leq T} Y_t \geq M \right]
 #   = 2 \proba \left[ Y_T \geq M \right]
 #   = 2\left(1 -  \Phi\left(\frac{M-x_0}{\sigma \sqrt{T}}\right)\right),
 # $$
@@ -219,11 +219,12 @@ P = 2 * (1 - scipy.stats.norm.cdf((M - x0)/(sigma*np.sqrt(T))))
 def f(x):
     return (np.max(x, axis=0) >= M)*1.
 
-def importance_sampling(b_fun, m, N, plot=False):
+def importance_sampling(b_fun, m, N, plot=False, plot_title=None):
     # N is the number of discretization points and m is the number of samples.
 
     # Time and Brownian increments
     Δt = T/N
+    Δw = np.sqrt(Δt) * np.random.randn(N, m)
 
     # Likelihood ratio
     def g(x):
@@ -234,51 +235,40 @@ def importance_sampling(b_fun, m, N, plot=False):
             result += bi * (x[i + 1, :] - x[i, :]) - (1/2) * bi**2 * Δt
         return np.exp(-(1/sigma**2) * result)
 
-    m_per_slice = 10**4
-    n_slices = m // m_per_slice
-    m = m_per_slice * n_slices
-    mn, qn = 0, 0
+    # We store the initial condition in x too (hence N + 1)
+    x = np.zeros((N + 1, m))
 
-    for i in range(n_slices):
-        print(i)
+    # Set initial condition
+    x[0, :] = x0
 
-        # Brownian increments
-        Δw = np.sqrt(Δt) * np.random.randn(N, m_per_slice)
+    for j in range(N):
+        x[j + 1] = x[j] + b_fun(x[j]) * Δt + sigma * Δw[j]
 
-        # We store the initial condition in x too
-        x = np.zeros((N + 1, m_per_slice))
+    # Evaluate target function and likelihood ratio
+    fx, gx = f(x), g(x)
 
-        # Set initial condition
-        x[0, :] = x0
-
-        for j in range(N):
-            x[j + 1] = x[j] + b_fun(x[j]) * Δt + sigma * Δw[j]
-
-        # Evaluate target function and likelihood ratio
-        fx, gx = f(x), g(x)
-        mn = 1/(i+1) * (mn*i + np.mean(fx*gx))
-        qn = 1/(i+1) * (qn*i + np.mean((fx*gx)**2))
+    estimator = np.mean(fx*gx)
+    variance = np.var(fx*gx)
 
     if plot:
         n_samples = 20
         fig, ax = plt.subplots()
         t = np.linspace(0, T, N + 1)
-        ax.plot(t, x[:, :n_samples], marker='.')
-        ax.plot(t, np.zeros(N + 1), linestyle='--', color='k')
+        ax.plot(t, x[:, :n_samples])
+        ax.plot(t, M + np.zeros(N + 1), linestyle='--', color='k')
         ax.set_xlabel("$t$")
+        ax.set_title(plot_title)
         plt.show()
 
-    return mn, n/(n - 1) * (qn - mn**2)
+    return estimator, variance
 
 def print_confidence(m, v):
     a = scipy.stats.norm.ppf(.975)
-    # or 'manually'...
-    # a = np.sqrt(2)*scipy.special.erfinv(.95)
-    print("95% confidence interval for the probability of ruin: [{:0.6f}, {:0.6f}]"
+    print("95% confidence interval for P: [{:0.6f}, {:0.6f}]"
             .format(m - a*np.sqrt(v), m + a*np.sqrt(v)))
 
 # Number of samples
-N, m = 10, 10**6
+N, m = 10, 10**4
 
 # Default parameter
 b = M/T
@@ -300,6 +290,19 @@ print_confidence(mean_im, var/m)
 
 # +
 # To obtain a better estimate, we reduce the time step
+N = 10**2
+
+# Without importance sampling
+mean, var = importance_sampling(b_fun=lambda x: 0, m=m, N=N)
+print_confidence(mean, var/m)
+
+# With improved importance sampling
+mean_im, var = importance_sampling(b_fun=lambda x: (x < M)*b, m=m, N=N)
+print_confidence(mean_im, var/m)
+# -
+
+# +
+# We obtain an even better estimate by further reducing the time step
 N = 10**3
 
 # Without importance sampling
@@ -309,4 +312,12 @@ print_confidence(mean, var/m)
 # With improved importance sampling
 mean_im, var = importance_sampling(b_fun=lambda x: (x < M)*b, m=m, N=N)
 print_confidence(mean_im, var/m)
+# -
+
+# +
+# Plot trajectories from nominal and importance distributions
+mean, var = importance_sampling(b_fun=lambda x: 0, m=m, N=N, plot=True, 
+                                plot_title="Nominal distribution")
+mean_im, var = importance_sampling(b_fun=lambda x: (x < M)*b, m=m, N=N, plot=True,
+                                   plot_title="Importance distribution")
 # -
