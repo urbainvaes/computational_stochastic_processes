@@ -130,7 +130,7 @@ anim
 # $$
 # M_N(X^{\Delta t}) = \exp \left(\frac{1}{\sigma} \int_0^T \,b(\hat X^{\Delta t}_t) \, \d W_t + \frac{1}{2 \sigma^2} \int_0^t |b(\hat X^{\Delta t}_t)|^2 \d t \right).
 # $$
-# The Girsanov theorem shows that these considerations can be extended to the continuous-time processes $X_t$ (with drift $b$) and $Y_t$ (without drift).
+# The Girsanov theorem shows that some of these considerations can be extended to the continuous-time processes $X_t$ (with drift $b$) and $Y_t$ (without drift).
 # Roughly speaking, the theorem states that we can pass to the limit in equation $(1)$,
 # in the sense that
 # $$
@@ -142,6 +142,9 @@ anim
 # $$
 # Note that, in this equation $W_t$ is the driving Brownian motion of the equation for $X_t$;
 # in other words, it might be useful to see $W_t$ as a function of $X_t$ in this equation.
+# Note also that the laws of $X_t$ and $Y_t$ are measures over an infinite-dimensional,
+# so it does not make sense to consider their density with respect to a Lebesgue measure and to define $M(X_t)$ as a ratio,
+# which is why Girsanov's theorem is useful.
 #
 # Below we employ this result to estimate the probability that a Brownian motion exceeds a certain threshold:
 # this is the continuous counterpart of the gambler's ruin.
