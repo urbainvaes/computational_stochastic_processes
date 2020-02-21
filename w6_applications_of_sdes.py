@@ -252,10 +252,21 @@ def importance_sampling(b_fun, m, N, plot=False, plot_title=None):
 
     if plot:
         n_samples = 20
+
+        # Calculate colors
+        cmap = matplotlib.cm.get_cmap('binary')
+        colors = np.log(gx[:n_samples])
+        delta = np.max(colors) - np.min(colors)
+        colors = (colors - np.min(colors)) / delta if delta > 1e-8 \
+                else 0*colors + 1.
+
         fig, ax = plt.subplots()
         t = np.linspace(0, T, N + 1)
-        ax.plot(t, x[:, :n_samples])
-        ax.plot(t, M + np.zeros(N + 1), linestyle='--', color='k')
+        for j in range(n_samples):
+            color = cmap(colors[j])
+            ax.plot(t, x[:, j], color=color)
+
+        ax.plot(t, M + np.zeros(N + 1), linestyle='--', color='g')
         ax.set_xlabel("$t$")
         ax.set_title(plot_title)
         plt.show()
@@ -316,8 +327,8 @@ print_confidence(mean_im, var/m)
 
 # +
 # Plot trajectories from nominal and importance distributions
-mean, var = importance_sampling(b_fun=lambda x: 0, m=m, N=N, plot=True, 
+mean, var = importance_sampling(b_fun=lambda x: 0, m=m, N=N, plot=True,
                                 plot_title="Nominal distribution")
 mean_im, var = importance_sampling(b_fun=lambda x: (x < M)*b, m=m, N=N, plot=True,
-                                   plot_title="Importance distribution")
+                                   plot_title="Importance distribution and likelihood")
 # -
