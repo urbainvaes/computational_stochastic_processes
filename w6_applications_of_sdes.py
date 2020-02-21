@@ -255,21 +255,41 @@ def importance_sampling(b_fun, m, N, plot=False, plot_title=None):
 
         # Calculate colors
         colors = np.log(gx[:n_samples])
-        delta = np.max(colors) - np.min(colors)
+        Max, Min = np.max(colors), np.min(colors)
+        delta = Max - Min
 
+        # Colormap
         cmap = matplotlib.cm.get_cmap('GnBu')
         colors = (colors - np.min(colors)) / delta if delta > 1e-8 else None
 
+        # Figure
+        fig = plt.figure(constrained_layout=True)
+        gs = fig.add_gridspec(8, 1)
+
+        if delta < 1e-8:
+            ax_plot = fig.add_subplot(gs[:, :])
+        else:
+            ax_plot = fig.add_subplot(gs[:-1, :])
+            ax_cb = fig.add_subplot(gs[-1, :])
+
         t = np.linspace(0, T, N + 1)
-        fig, ax = plt.subplots()
         for j in range(n_samples):
             color = cmap(colors[j]) if colors is not None else None
-            ax.plot(t, x[:, j], color=color)
+            ax_plot.plot(t, x[:, j], color=color)
 
         # 'ls' is 'linestyle' and 'c' = 'color'
-        ax.plot(t, M + np.zeros(N + 1), ls='--', c='g')
-        ax.set_xlabel("$t$")
-        ax.set_title(plot_title)
+        ax_plot.plot(t, M + np.zeros(N + 1), ls='--', c='g')
+        ax_plot.set_xlabel("$t$")
+        ax_plot.set_title(plot_title)
+
+        # Add standalone colorbar
+        if delta > 1e-8:
+            ax_cb.set_xscale('log')
+            norm = matplotlib.colors.Normalize(vmin=Min, vmax=Max)
+            cb = matplotlib.colorbar.ColorbarBase(
+                    ax_cb, cmap=cmap, norm=norm, orientation='horizontal')
+            cb.set_label('Likelihood')
+
         plt.show()
 
     return estimator, variance
