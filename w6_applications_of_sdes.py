@@ -266,7 +266,7 @@ def importance_sampling(b_fun, m, N, plot=False, plot_title=None):
             color = cmap(colors[j])
             ax.plot(t, x[:, j], color=color)
 
-        # 'ls' is 'linestyle', 'c' = 'color'
+        # 'ls' is 'linestyle' and 'c' = 'color'
         ax.plot(t, M + np.zeros(N + 1), ls='--', c='g')
         ax.set_xlabel("$t$")
         ax.set_title(plot_title)
