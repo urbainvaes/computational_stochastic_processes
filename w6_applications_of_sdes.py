@@ -260,13 +260,14 @@ def importance_sampling(b_fun, m, N, plot=False, plot_title=None):
         colors = (colors - np.min(colors)) / delta if delta > 1e-8 \
                 else 0*colors + 1.
 
-        fig, ax = plt.subplots()
         t = np.linspace(0, T, N + 1)
+        fig, ax = plt.subplots()
         for j in range(n_samples):
             color = cmap(colors[j])
             ax.plot(t, x[:, j], color=color)
 
-        ax.plot(t, M + np.zeros(N + 1), linestyle='--', color='g')
+        # 'ls' is 'linestyle', 'c' = 'color'
+        ax.plot(t, M + np.zeros(N + 1), ls='--', c='g')
         ax.set_xlabel("$t$")
         ax.set_title(plot_title)
         plt.show()
