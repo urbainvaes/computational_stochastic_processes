@@ -180,7 +180,7 @@ anim
 # Denoting by $\hat X^{\Delta t} = \{\hat X^{\Delta t}\}_{t \in [0, 1]}$ the piecewise constant continuous-time interpolation of $\{X^{\Delta t}_n\}_{n=0}^N$,
 # we can rewrite the previous equation as
 # $$
-# M_N(X^{\Delta t}) = \exp \left( - \frac{1}{\sigma} \int_0^T \,b(\hat X^{\Delta t}_t) \, \d W_t - \frac{1}{2 \sigma^2} \int_0^t |b(\hat X^{\Delta t}_t)|^2 \d t \right). \tag{2}
+# M_N(X^{\Delta t}) = \exp \left( - \frac{1}{\sigma} \int_0^T \,b(\hat X^{\Delta t}_t) \, \d W_t - \frac{1}{2 \sigma^2} \int_0^T |b(\hat X^{\Delta t}_t)|^2 \d t \right). \tag{2}
 # $$
 # The Girsanov theorem shows that some of these considerations can be extended to the continuous-time processes $X_t$ (with drift $b$) and $Y_t$ (without drift).
 # Roughly speaking, the theorem states that we can pass to the limit in equation $(1)$,
@@ -190,7 +190,7 @@ anim
 # $$
 # where $M(t)$ admits the following expression
 # $$
-# M(X_t) = \exp \left( - \frac{1}{\sigma} \int_0^T \,b(X_t) \, \d W_t - \frac{1}{2 \sigma^2} \int_0^t |b(X_t)|^2 \d t \right),
+# M(X_t) = \exp \left( - \frac{1}{\sigma} \int_0^T \,b(X_t) \, \d W_t - \frac{1}{2 \sigma^2} \int_0^T |b(X_t)|^2 \d t \right),
 # $$
 # which is not surprising in view of $(2)$.
 # Note that, in this equation, $W_t$ is the driving Brownian motion of the equation for $X_t$;
