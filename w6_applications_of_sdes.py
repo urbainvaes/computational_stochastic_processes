@@ -288,7 +288,7 @@ def importance_sampling(b_fun, m, N, plot=False, plot_title=None):
             # norm = matplotlib.colors.Normalize(vmin=Min, vmax=Max)
             cb = matplotlib.colorbar.ColorbarBase(
                     ax_cb, cmap=cmap, norm=norm, orientation='horizontal')
-            cb.set_label('Likelihood')
+            cb.set_label("Likelihood ratio")
 
         plt.show()
 
@@ -351,5 +351,5 @@ print_confidence(mean_im, var/m)
 mean, var = importance_sampling(b_fun=lambda x: 0, m=m, N=N, plot=True,
                                 plot_title="Nominal distribution")
 mean_im, var = importance_sampling(b_fun=lambda x: (x < M)*b, m=m, N=N, plot=True,
-                                   plot_title="Importance distribution and likelihood")
+                                   plot_title="Importance distribution")
 # -
