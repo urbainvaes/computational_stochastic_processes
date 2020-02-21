@@ -254,7 +254,7 @@ def importance_sampling(b_fun, m, N, plot=False, plot_title=None):
         n_samples = 20
 
         # Calculate colors
-        colors = np.log(gx[:n_samples])
+        colors = np.log10(gx[:n_samples])
         Max, Min = np.max(colors), np.min(colors)
         delta = Max - Min
 
@@ -284,8 +284,8 @@ def importance_sampling(b_fun, m, N, plot=False, plot_title=None):
 
         # Add standalone colorbar
         if delta > 1e-8:
-            ax_cb.set_xscale('log')
-            norm = matplotlib.colors.Normalize(vmin=Min, vmax=Max)
+            norm = matplotlib.colors.LogNorm(vmin=10**Min, vmax=10**Max)
+            # norm = matplotlib.colors.Normalize(vmin=Min, vmax=Max)
             cb = matplotlib.colorbar.ColorbarBase(
                     ax_cb, cmap=cmap, norm=norm, orientation='horizontal')
             cb.set_label('Likelihood')
