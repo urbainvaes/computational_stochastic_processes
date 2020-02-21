@@ -153,9 +153,9 @@ anim
 # f_X^N(x_1, \dotsc, x_N) =
 # \left|\frac{1}{\sqrt{2\pi\sigma^2\Delta t}}\right|^N \, \exp \left(-\frac{1}{2\sigma^2\Delta t} \sum_{k=0}^{N -1} \left|x_{k+1} - x_{k} - b(x_k) \Delta t \right|^2 \right).
 # $$
-# Let us now denote by $Y_t$ and $Y^{\Delta}_t$ the exact solution to the equation without drif tand its Euler-Maruyama approximation,
-# i.e. with $b(\cdot) = 0$,
-# and by $f_{Y}^N$ the associated PDF.
+# Let us now denote by $Y_t$ the exact solution to the equation without drift,
+# i.e. with $b(\cdot) = 0$, by $Y^{\Delta t} = \{Y^{\Delta t}_n\}_{n=1}^{N}$ its Euler-Maruyama approximation,
+# and by $f_{Y}^N$ the PDF of $Y^{\Delta t}$.
 # A simple calculation shows the ratio of the densities is given by:
 # $$
 # M_N(x_1, \dotsc, x_N) := \frac{f_X^N(x_1, \dotsc, x_N)}{f_Y^N(x_1, \dotsc, x_N)} = \exp \left(\frac{1}{\sigma^2} \sum_{k=0}^{N -1} b(x_k) \, (x_{k+1} - x_{k}) - \frac{1}{2} |b(x_k)|^2 \Delta t \right).
@@ -191,8 +191,8 @@ anim
 # $$
 # M(X_t) = \exp \left(\frac{1}{\sigma} \int_0^T \,b(X_t) \, \d W_t + \frac{1}{2 \sigma^2} \int_0^t |b(X_t)|^2 \d t \right).
 # $$
-# Note that, in this equation $W_t$ is the driving Brownian motion of the equation for $X_t$;
-# in other words, it might be useful to see $W_t$ as a function of $X_t$ in this equation.
+# Note that, in this equation, $W_t$ is the driving Brownian motion of the equation for $X_t$;
+# it might be useful to see $W_t$ as a function of $X_t$.
 # Note also that the laws of $X_t$ and $Y_t$ are measures over an infinite-dimensional,
 # so it does not make sense to consider their density with respect to a Lebesgue measure and to define $M(X_t)$ as a ratio,
 # which is why Girsanov's theorem is useful.
