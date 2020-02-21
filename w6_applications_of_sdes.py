@@ -254,16 +254,16 @@ def importance_sampling(b_fun, m, N, plot=False, plot_title=None):
         n_samples = 20
 
         # Calculate colors
-        cmap = matplotlib.cm.get_cmap('binary')
         colors = np.log(gx[:n_samples])
         delta = np.max(colors) - np.min(colors)
-        colors = (colors - np.min(colors)) / delta if delta > 1e-8 \
-                else 0*colors + 1.
+
+        cmap = matplotlib.cm.get_cmap('GnBu')
+        colors = (colors - np.min(colors)) / delta if delta > 1e-8 else None
 
         t = np.linspace(0, T, N + 1)
         fig, ax = plt.subplots()
         for j in range(n_samples):
-            color = cmap(colors[j])
+            color = cmap(colors[j]) if colors is not None else None
             ax.plot(t, x[:, j], color=color)
 
         # 'ls' is 'linestyle' and 'c' = 'color'
