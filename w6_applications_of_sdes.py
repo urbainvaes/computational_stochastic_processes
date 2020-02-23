@@ -280,7 +280,7 @@ print("Exact value of the probability: {0:0.06f}".format(P))
 mean, var = importance_sampling(b_fun=lambda x: 0, m=m, N=N)
 print_confidence(mean, var/m)
 
-# With improved importance sampling
+# With importance sampling
 mean_im, var = importance_sampling(b_fun=lambda x: (x < M)*b, m=m, N=N)
 print_confidence(mean_im, var/m)
 
@@ -296,7 +296,7 @@ N = 10**2
 mean, var = importance_sampling(b_fun=lambda x: 0, m=m, N=N)
 print_confidence(mean, var/m)
 
-# With improved importance sampling
+# With importance sampling
 mean_im, var = importance_sampling(b_fun=lambda x: (x < M)*b, m=m, N=N)
 print_confidence(mean_im, var/m)
 # -
@@ -309,7 +309,7 @@ N = 10**3
 mean, var = importance_sampling(b_fun=lambda x: 0, m=m, N=N)
 print_confidence(mean, var/m)
 
-# With improved importance sampling
+# With importance sampling
 mean_im, var = importance_sampling(b_fun=lambda x: (x < M)*b, m=m, N=N)
 print_confidence(mean_im, var/m)
 # -
