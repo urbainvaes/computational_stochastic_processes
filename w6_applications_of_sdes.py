@@ -268,7 +268,7 @@ def print_confidence(m, v):
             .format(m - a*np.sqrt(v), m + a*np.sqrt(v)))
 
 # Number of samples
-N, m = 10, 10**4
+m = 10**4
 
 # Default parameter
 b = M/T
@@ -276,47 +276,33 @@ b = M/T
 # Print exact value
 print("Exact value of the probability: {0:0.06f}".format(P))
 
-# Without importance sampling
-mean, var = importance_sampling(b_fun=lambda x: 0, m=m, N=N)
-print_confidence(mean, var/m)
-
-# With importance sampling
-mean_im, var = importance_sampling(b_fun=lambda x: (x < M)*b, m=m, N=N)
-print_confidence(mean_im, var/m)
+def estimate(N):
+    # Without importance sampling
+    mean, var = importance_sampling(b_fun=lambda x: 0, m=m, N=N)
+    print_confidence(mean, var/m)
+    
+    # With importance sampling
+    mean_im, var = importance_sampling(b_fun=lambda x: (x < M)*b, m=m, N=N)
+    print_confidence(mean_im, var/m)
 
 # Here the error induced by the fact that we are calculating the supremum based
 # on only a finite number of discretization points dominates.
+estimate(10)
 # -
 
 # +
 # To obtain a better estimate, we reduce the time step
-N = 10**2
-
-# Without importance sampling
-mean, var = importance_sampling(b_fun=lambda x: 0, m=m, N=N)
-print_confidence(mean, var/m)
-
-# With importance sampling
-mean_im, var = importance_sampling(b_fun=lambda x: (x < M)*b, m=m, N=N)
-print_confidence(mean_im, var/m)
+estimate(10**2)
 # -
 
 # +
 # We obtain an even better estimate by further reducing the time step
-N = 10**3
-
-# Without importance sampling
-mean, var = importance_sampling(b_fun=lambda x: 0, m=m, N=N)
-print_confidence(mean, var/m)
-
-# With importance sampling
-mean_im, var = importance_sampling(b_fun=lambda x: (x < M)*b, m=m, N=N)
-print_confidence(mean_im, var/m)
+estimate(10**3)
 # -
 
 # +
 # Plot trajectories from nominal and importance distributions
-mean, var = importance_sampling(b_fun=lambda x: 0, m=m, N=N, plot=True, 
+mean, var = importance_sampling(b_fun=lambda x: 0, m=m, N=N, plot=True,
                                 plot_title="Nominal distribution")
 mean_im, var = importance_sampling(b_fun=lambda x: (x < M)*b, m=m, N=N, plot=True,
                                    plot_title="Importance distribution")
