@@ -336,8 +336,8 @@ estimate(10**3)
 
 # +
 # Plot trajectories from nominal and importance distributions
-mean, var = importance_sampling(b_fun=lambda x: 0, m=m, N=N, plot=True,
+mean, var = importance_sampling(b_fun=lambda x: 0, m=m, N=10**3, plot=True,
                                 plot_title="Nominal distribution")
-mean_im, var = importance_sampling(b_fun=lambda x: (x < K)*b, m=m, N=N, plot=True,
+mean_im, var = importance_sampling(b_fun=lambda x: (x < K)*b, m=m, N=10**3, plot=True,
                                    plot_title="Importance distribution")
 # -
