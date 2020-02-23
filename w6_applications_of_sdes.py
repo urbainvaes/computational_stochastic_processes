@@ -143,7 +143,7 @@ anim
 # $$
 # X^{\Delta t}_{n+1} = X^{\Delta t}_n + b(X^{\Delta t}_n) \, \Delta t + \sigma \, \Delta W_n, \qquad X^{\Delta t}_0 = x_0, \qquad n = 0, \dotsc, N-1.
 # $$
-# This update formula defines a discrete-time stochastic process very similar to one we looked at a few weeks ago,
+# This update formula defines a discrete-time stochastic process very similar to one we examined a few weeks ago,
 # when we calculated the probability of ruin of a gambler by importance sampling.
 # Remember, in particular,
 # that we derived an explicit expression for the PDF of $\{X^{\Delta t}_n\}_{n=1}^{N}$,
@@ -153,71 +153,73 @@ anim
 # f_X^N(x_1, \dotsc, x_N) =
 # \left|\frac{1}{\sqrt{2\pi\sigma^2\Delta t}}\right|^N \, \exp \left(-\frac{1}{2\sigma^2\Delta t} \sum_{k=0}^{N -1} \left|x_{k+1} - x_{k} - b(x_k) \Delta t \right|^2 \right).
 # $$
-# Let us now denote by $Y_t$ and $Y^{\Delta}_t$ the exact solution to the equation without drif tand its Euler-Maruyama approximation,
+# Let us now denote by $Y_t$ the exact solution to the equation without drift,
 # i.e. with $b(\cdot) = 0$,
-# and by $f_{Y}^N$ the associated PDF.
-# A simple calculation shows the ratio of the densities is given by:
+# by $Y^{\Delta t} = \{Y^{\Delta t}_n\}_{n=1}^{N}$ its Euler-Maruyama approximation,
+# and by $f_{Y}^N$ the PDF of $Y^{\Delta t}$.
+# A simple calculation shows the ratio of the densities, called the *likelihood ratio*, is given by:
 # $$
-# M_N(x_1, \dotsc, x_N) := \frac{f_X^N(x_1, \dotsc, x_N)}{f_Y^N(x_1, \dotsc, x_N)} = \exp \left(\frac{1}{\sigma^2} \sum_{k=0}^{N -1} b(x_k) \, (x_{k+1} - x_{k}) - \frac{1}{2} |b(x_k)|^2 \Delta t \right).
+# M_N(x_1, \dotsc, x_N) := \frac{f_Y^N(x_1, \dotsc, x_N)}{f_X^N(x_1, \dotsc, x_N)} = \exp \left(- \frac{1}{\sigma^2} \sum_{k=0}^{N -1} \left( b(x_k) \, (x_{k+1} - x_{k}) - \frac{1}{2} |b(x_k)|^2 \Delta t \right) \right).
 # $$
 # Since the right-hand side is strictly positive,
-# we say in measure-theoretic terms that $f_X^N$ (or, to be more precise, the measure associated to it)
-# is *absolutely continuous* with respect to $f_Y^N$.
-# Since the reciprocal of the ratio is also positive, $f_Y^N$ is also absolutely continuous with respect to $f_X^N$,
+# we say in measure-theoretic terms that $f_Y^N$ (or, to be more precise, the measure associated to it)
+# is *absolutely continuous* with respect to $f_X^N$.
+# Since the reciprocal of the ratio is also positive, $f_X^N$ is also absolutely continuous with respect to $f_Y^N$:
 # we say that the two measures are *equivalent*.
 # This implies in particular that we can use $f_X^N$ to compute expectations with respect to $f_Y^N$, and vice versa:
 # $$
-# \expect_{Y^{\Delta t} \sim f_Y^N} [g(Y^{\Delta t})] = \expect_{X^{\Delta t} \sim f_X^N} [M_N(X^{\Delta t})^{-1} \, g(X^{\Delta t})]. \tag{1}
+# \expect_{Y^{\Delta t} \sim f_Y^N} [g(Y^{\Delta t})] = \expect_{X^{\Delta t} \sim f_X^N} [M_N(X^{\Delta t}) \, g(X^{\Delta t})]. \tag{1}
 # $$
 # where here $X^{\Delta t}$ and $Y^{\Delta t}$ are short notations for $(X^{\Delta t}_1, \dotsc, X^{\Delta t}_N)$ and $(Y^{\Delta t}_1, \dotsc, Y^{\Delta t}_N)$, respectively.
 # Now observe, as we already did in the problem sheet,
 # that if $X^{\Delta t}$ is obtained from the Euler-Maruyama scheme above,
 # then we have
 # $$
-# M_N(X^{\Delta t}) = \exp \left(\frac{1}{\sigma^2} \sum_{k=0}^{N -1} \sigma \,b(X^{\Delta t}_k) \, \Delta W_k + \frac{1}{2} |b(X^{\Delta t}_k)|^2 \Delta t \right).
+# M_N(X^{\Delta t}) = \exp \left(- \frac{1}{\sigma^2} \sum_{k=0}^{N -1} \left( \sigma \,b(X^{\Delta t}_k) \, \Delta W_k + \frac{1}{2} |b(X^{\Delta t}_k)|^2 \Delta t \right) \right).
 # $$
-# Denoting by $\hat X^{\Delta t}$ the piecewise constant continuous-time interpolation of $X^{\Delta t}_k$,
+# Denoting by $\hat X^{\Delta t} = \{\hat X^{\Delta t}\}_{t \in [0, 1]}$ the piecewise constant continuous-time interpolation of $\{X^{\Delta t}_n\}_{n=0}^N$,
 # we can rewrite the previous equation as
 # $$
-# M_N(X^{\Delta t}) = \exp \left(\frac{1}{\sigma} \int_0^T \,b(\hat X^{\Delta t}_t) \, \d W_t + \frac{1}{2 \sigma^2} \int_0^t |b(\hat X^{\Delta t}_t)|^2 \d t \right).
+# M_N(X^{\Delta t}) = \exp \left( - \frac{1}{\sigma} \int_0^T \,b(\hat X^{\Delta t}_t) \, \d W_t - \frac{1}{2 \sigma^2} \int_0^T |b(\hat X^{\Delta t}_t)|^2 \d t \right). \tag{2}
 # $$
 # The Girsanov theorem shows that some of these considerations can be extended to the continuous-time processes $X_t$ (with drift $b$) and $Y_t$ (without drift).
 # Roughly speaking, the theorem states that we can pass to the limit in equation $(1)$,
 # in the sense that
 # $$
-# \expect [g(Y_t)] = \expect [M(X_t)^{-1} \, g(X_t)],
+# \expect [g(Y_t)] = \expect [M(X_t) \, g(X_t)],
 # $$
-# where $M(t)$ admits the expression suggested by $(2)$:
+# where $M(t)$ admits the following expression
 # $$
-# M(X_t) = \exp \left(\frac{1}{\sigma} \int_0^T \,b(X_t) \, \d W_t + \frac{1}{2 \sigma^2} \int_0^t |b(X_t)|^2 \d t \right).
+# M(X_t) = \exp \left( - \frac{1}{\sigma} \int_0^T \,b(X_t) \, \d W_t - \frac{1}{2 \sigma^2} \int_0^T |b(X_t)|^2 \d t \right),
 # $$
-# Note that, in this equation $W_t$ is the driving Brownian motion of the equation for $X_t$;
-# in other words, it might be useful to see $W_t$ as a function of $X_t$ in this equation.
-# Note also that the laws of $X_t$ and $Y_t$ are measures over an infinite-dimensional,
+# which is not surprising in view of $(2)$.
+# Note that, in this equation, $W_t$ is the driving Brownian motion of the equation for $X_t$;
+# it might be useful to see $W_t$ as a function of $X_t$.
+# Note also that the laws of $X_t$ and $Y_t$ are measures over an infinite-dimensional space,
 # so it does not make sense to consider their density with respect to a Lebesgue measure and to define $M(X_t)$ as a ratio,
 # which is why Girsanov's theorem is useful.
 #
-# Below we employ this result to estimate the probability that $Y_t = x_0 + \sigma W_t$ exceeds a certain threshold $M$ for some $t \in [0, T]$:
+# Below we employ this result to estimate the probability that $Y_t = x_0 + \sigma W_t$ exceeds a certain threshold $K$ for some $t \in [0, T]$:
 # this is the continuous counterpart of the gambler's ruin. By the [reflection principle](https://en.wikipedia.org/wiki/Reflection_principle_(Wiener_process)),
-# this probability is equal
+# this probability equals
 # $$
-# P := \proba \left[\sup_{0 \leq t \leq T} Y_t \geq M \right]
-#   = 2 \proba \left[ Y_T \geq M \right]
-#   = 2\left(1 -  \Phi\left(\frac{M-x_0}{\sigma \sqrt{T}}\right)\right),
+# P := \proba \left[\sup_{0 \leq t \leq T} Y_t \geq K \right]
+#   = 2 \proba \left[ Y_T \geq K \right]
+#   = 2\left(1 -  \Phi\left(\frac{K-x_0}{\sigma \sqrt{T}}\right)\right),
 # $$
 # where $\Phi$ is the Gaussian CDF.
 # For simplicity, we will take $x_0 = 0$ and $T = 1$.
 
 # +
 # Parameters
-x0, T, sigma, M = 0, 1, 2, 6
+x0, T, sigma, K = 0, 1, 2, 6
 
 # Exact value of probability
-P = 2 * (1 - scipy.stats.norm.cdf((M - x0)/(sigma*np.sqrt(T))))
+P = 2 * (1 - scipy.stats.norm.cdf((K - x0)/(sigma*np.sqrt(T))))
 
 # Indicator functions of which we want to calculate the expectation
 def f(x):
-    return (np.max(x, axis=0) >= M)*1.
+    return (np.max(x, axis=0) >= K)*1.
 
 def importance_sampling(b_fun, m, N, plot=False, plot_title=None):
     # N is the number of discretization points and m is the number of samples.
@@ -252,12 +254,44 @@ def importance_sampling(b_fun, m, N, plot=False, plot_title=None):
 
     if plot:
         n_samples = 20
-        fig, ax = plt.subplots()
+
+        # Calculate colors
+        colors = np.log10(gx[:n_samples])
+        Max, Min = np.max(colors), np.min(colors)
+        delta = Max - Min
+
+        # Colormap
+        cmap = matplotlib.cm.get_cmap('GnBu')
+        colors = (colors - np.min(colors)) / delta if delta > 1e-8 else None
+
+        # Figure
+        fig = plt.figure(constrained_layout=True)
+        gs = fig.add_gridspec(8, 1)
+
+        if delta < 1e-8:
+            ax_plot = fig.add_subplot(gs[:, :])
+        else:
+            ax_plot = fig.add_subplot(gs[:-1, :])
+            ax_cb = fig.add_subplot(gs[-1, :])
+
         t = np.linspace(0, T, N + 1)
-        ax.plot(t, x[:, :n_samples])
-        ax.plot(t, M + np.zeros(N + 1), linestyle='--', color='k')
-        ax.set_xlabel("$t$")
-        ax.set_title(plot_title)
+        for j in range(n_samples):
+            color = cmap(colors[j]) if colors is not None else None
+            ax_plot.plot(t, x[:, j], color=color)
+
+        # 'ls' is 'linestyle' and 'c' = 'color'
+        ax_plot.plot(t, K + np.zeros(N + 1), ls='--', c='g')
+        ax_plot.set_xlabel("$t$")
+        ax_plot.set_title(plot_title)
+
+        # Add standalone colorbar
+        if delta > 1e-8:
+            norm = matplotlib.colors.LogNorm(vmin=10**Min, vmax=10**Max)
+            # norm = matplotlib.colors.Normalize(vmin=Min, vmax=Max)
+            cb = matplotlib.colorbar.ColorbarBase(
+                    ax_cb, cmap=cmap, norm=norm, orientation='horizontal')
+            cb.set_label("Likelihood ratio")
+
         plt.show()
 
     return estimator, variance
@@ -271,7 +305,7 @@ def print_confidence(m, v):
 m = 10**4
 
 # Default parameter
-b = M/T
+b = K/T
 
 # Print exact value
 print("Exact value of the probability: {0:0.06f}".format(P))
@@ -280,9 +314,9 @@ def estimate(N):
     # Without importance sampling
     mean, var = importance_sampling(b_fun=lambda x: 0, m=m, N=N)
     print_confidence(mean, var/m)
-    
+
     # With importance sampling
-    mean_im, var = importance_sampling(b_fun=lambda x: (x < M)*b, m=m, N=N)
+    mean_im, var = importance_sampling(b_fun=lambda x: (x < K)*b, m=m, N=N)
     print_confidence(mean_im, var/m)
 
 # Here the error induced by the fact that we are calculating the supremum based
@@ -304,6 +338,6 @@ estimate(10**3)
 # Plot trajectories from nominal and importance distributions
 mean, var = importance_sampling(b_fun=lambda x: 0, m=m, N=N, plot=True,
                                 plot_title="Nominal distribution")
-mean_im, var = importance_sampling(b_fun=lambda x: (x < M)*b, m=m, N=N, plot=True,
+mean_im, var = importance_sampling(b_fun=lambda x: (x < K)*b, m=m, N=N, plot=True,
                                    plot_title="Importance distribution")
 # -
