@@ -113,7 +113,7 @@ plt.show()
 # It turns out that the choice of the measure with respect to which we write the density of the law of $X$ does not matter:
 # the maximum likelihood estimation would produce the same estimator if we used the density w.r.t. the law of $Y_t = W_t + t$,
 # for example. Convince yourself of this!
-
+# 
 # Calculating the density w.r.t. the law of Brownian motion is however convenient,
 # because the density is given directly by Girsanov's theorem.
 # We emphasize again there is no analogue of Lebesgue measure on an infinite-dimensional Banach spaces,
@@ -129,7 +129,7 @@ plt.show()
 # Note that, unlike inference for the diffusion coefficient,
 # where we could obtain an estimation that is arbitrarily precise if we can have access to the solution at every $t \in [0, T]$,
 # the only way to drive the variance of the maximum likelihood estimator to zero is to obtain more observations.
-
+#
 # Suppose that $X^{(1)}, \dotsc, X^{(J)}$ independently drawn from $\mathbb P_X$:
 # by this, we mean that $X^{(1)}, \dotsc, X^{(J)}$ are i.i.d. random variables (living in a function space) whose law coincides with that of  the strong solution to $(1)$.
 # The vector $(X^{(1)}, \dotsc, X^{(J)})$ defines a random variable on the space $C([0, T]) \times \dotsc \times C([0, T])$,
@@ -143,4 +143,3 @@ plt.show()
 # \hat b = \frac{1}{J} \sum_{j=1}^J X^{(j)}_T.
 # $$
 # which is also unbiased and has variance $\mathrm{var}[X^{(0)}_T]/J$.
-# -
