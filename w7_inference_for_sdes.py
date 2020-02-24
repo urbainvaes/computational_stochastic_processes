@@ -143,3 +143,4 @@ plt.show()
 # \hat b = \frac{1}{J} \sum_{j=1}^J X^{(j)}_T.
 # $$
 # which is also unbiased and has variance $\mathrm{var}[X^{(0)}_T]/J$.
+# -
