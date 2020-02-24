@@ -113,7 +113,7 @@ plt.show()
 # It turns out that the choice of the measure with respect to which we write the density of the law of $X$ does not matter:
 # the maximum likelihood estimation would produce the same estimator if we used the density w.r.t. the law of $Y_t = W_t + t$,
 # for example. Convince yourself of this!
-# 
+#
 # Calculating the density w.r.t. the law of Brownian motion is however convenient,
 # because the density is given directly by Girsanov's theorem.
 # We emphasize again there is no analogue of Lebesgue measure on an infinite-dimensional Banach spaces,
