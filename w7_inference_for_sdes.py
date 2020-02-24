@@ -34,7 +34,7 @@ matplotlib.rc('animation', html='html5')
 T = 1
 
 # Finest grid points on which we will evaluate X
-max_pow = 20
+max_pow = 17
 n = 2**max_pow
 t = np.linspace(0, T, n + 1)
 
