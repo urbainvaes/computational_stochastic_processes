@@ -13,11 +13,11 @@ import matplotlib.animation as animation
 # +
 matplotlib.rc('font', size=20)
 matplotlib.rc('font', family='serif')
-matplotlib.rc('figure', figsize=(13, 8))
+matplotlib.rc('figure', figsize=(16, 11))
 matplotlib.rc('lines', linewidth=2)
 matplotlib.rc('lines', markersize=12)
-matplotlib.rc('figure.subplot', hspace=.1)
-matplotlib.rc('animation', html='html5')
+matplotlib.rc('figure.subplot', hspace=.3)
+matplotlib.rc('figure.subplot', wspace=.1)
 # -
 # # Inferring the diffusion coefficient
 # We illustrate the method seen in class for the simplest possible SDE with constant diffusion:
@@ -59,8 +59,6 @@ M = 100
 
 estimators = np.zeros((M, len(Ns)))
 for i in range(M):
-    print(i)
-
     # Brownian increments and solution
     dw = np.sqrt(T/n) * np.random.randn(n)
 
