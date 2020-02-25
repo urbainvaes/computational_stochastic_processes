@@ -195,13 +195,13 @@ cutoff = 100
 fig, [ax1, ax2] = plt.subplots(2)
 ax1.set_xlabel('$N$')
 ax1.set_xscale('log', basex=2)
-ax1.plot(Ns[cutoff:], mean[cutoff:], marker='.', label=r"$E [\hat \alpha_N]$")
+ax1.plot(Ns[cutoff:], mean[cutoff:], label=r"$E [\hat \alpha_N]$")
 ax1.plot(Ns[cutoff:], 0*Ns[cutoff:] + α, ls='--')
 ax1.legend()
 ax2.set_xlabel('$N$')
 ax2.set_xscale('log', basex=2)
 ax2.set_yscale('log', basey=2)
-ax2.plot(Ns[cutoff:], variance[cutoff:], marker='.',
+ax2.plot(Ns[cutoff:], variance[cutoff:],
          label=r"$var[\hat \alpha_N]$")
 ax2.legend()
 plt.show()
