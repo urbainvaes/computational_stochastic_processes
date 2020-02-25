@@ -22,7 +22,7 @@ np.random.seed(0)
 # We illustrate the method seen in class for the simplest possible SDE with constant diffusion:
 # $$
 # \newcommand{\d}{\mathrm d}
-# \d X_t = \sigma \, \d t, \qquad X_0 = 0.
+# \d X_t = \sigma \, \d W_t, \qquad X_0 = 0.
 # $$
 
 # +
@@ -93,7 +93,7 @@ plt.show()
 # both seen as measures on the space of continuous functions on $[0, T]$,
 # is given by Girsanov's theorem:
 # $$
-# \frac{\d \mathbb P_X}{\d \mathbb P_Y} (X; b) = \exp \left(\int_0^T b \, \d X_t - \frac12 \int_0^T b^2 \, \d t \right)
+# \frac{\d \mathbb P_X}{\d \mathbb P_W} (X; b) = \exp \left(\int_0^T b \, \d X_t - \frac12 \int_0^T b^2 \, \d t \right)
 #           = \exp \left(b \, X_T - \frac{1}{2} b^2 \, T \right).
 # $$
 # This density is called the *likelihood*.
