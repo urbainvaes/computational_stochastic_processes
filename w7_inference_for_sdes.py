@@ -127,7 +127,7 @@ plt.show()
 # This estimator happens to be unbiased, but this is usually not the case in more realistic situations.
 # Note that, unlike inference for the diffusion coefficient,
 # where we could obtain an estimation that is arbitrarily precise if we can have access to the solution at every $t \in [0, T]$,
-# the only way to drive the variance of the maximum likelihood estimator to zero is to obtain more replicas or to consider $T \to \infty$.
+# the only way to drive the variance of the maximum likelihood estimator for the drift to zero is to obtain more replicas or to consider $T \to \infty$.
 #
 # Suppose that $X^{(1)}, \dotsc, X^{(J)}$ independently drawn from $\mathbb P_X$:
 # by this, we mean that $X^{(1)}, \dotsc, X^{(J)}$ are i.i.d. random variables (living in a function space) whose law coincides with that of  the strong solution to $(1)$.
