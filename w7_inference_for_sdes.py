@@ -3,11 +3,9 @@
 #
 # This work is licensed under the terms of the MIT license.
 # For a copy, see <https://opensource.org/licenses/MIT>.
-import scipy.stats
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
-import matplotlib.animation as animation
 # -
 
 # +
@@ -86,7 +84,7 @@ ax2.legend()
 plt.show()
 # -
 # # Inferring the drift coefficient
-# Here we infer the drift coefficient for the equation
+# Let us first discuss inference of the drift coefficient for the simple equation
 # $$
 # \d X_t = b \, \d t + \d W_t, \qquad X_0 = 0. \tag{1}
 # $$
@@ -128,7 +126,7 @@ plt.show()
 # This estimator happens to be unbiased, but this is usually not the case in more realistic situations.
 # Note that, unlike inference for the diffusion coefficient,
 # where we could obtain an estimation that is arbitrarily precise if we can have access to the solution at every $t \in [0, T]$,
-# the only way to drive the variance of the maximum likelihood estimator to zero is to obtain more observations.
+# the only way to drive the variance of the maximum likelihood estimator to zero is to obtain more replicas or to consider $T \to \infty$.
 #
 # Suppose that $X^{(1)}, \dotsc, X^{(J)}$ independently drawn from $\mathbb P_X$:
 # by this, we mean that $X^{(1)}, \dotsc, X^{(J)}$ are i.i.d. random variables (living in a function space) whose law coincides with that of  the strong solution to $(1)$.
@@ -143,3 +141,65 @@ plt.show()
 # \hat b = \frac{1}{J} \sum_{j=1}^J X^{(j)}_T.
 # $$
 # which is also unbiased and has variance $\mathrm{var}[X^{(0)}_T]/J$.
+#
+# ## A More interesting example
+# Now we consider the Euler-Maruyama discretization of the Ornstein-Uhlenbeck process,
+# which we will view as simply a discrete-time stochastic process:
+# $$
+# X_{n+1} = X_{n} - \alpha \, X_{n} \, \Delta t + \xi \, \sqrt{\Delta t}, \qquad \Delta t = .01, \qquad \xi \sim \mathcal N(0, 1), \qquad X_0 = 0, \qquad 0 \leq n \leq N.
+# $$
+# Our goal will be, based on a realization of this discrete-time process,
+# to estimate the parameter $\alpha$.
+# As we saw on several occasions, the PDF (i.e. the density of the law w.r.t. the Lebesgue measure) of $X := (X_1, \dotsc, X_N)$ is given by
+# $$
+# f_X^N(x_1, \dotsc, x_N; \alpha) =
+# \left|\frac{1}{\sqrt{2\pi\Delta t}}\right|^N \, \exp \left(-\frac{1}{2\Delta t} \sum_{k=0}^{N -1} \left|x_{k+1} - x_{k} + \alpha \, x_k \Delta t \right|^2 \right).
+# $$
+# This is maximized when
+# $$
+# 0 = \frac{\d}{\d \alpha} \sum_{k=0}^{N -1} \left|x_{k+1} - x_{k} + \alpha \, x_k \Delta t \right|^2
+# = 2 \sum_{k=0}^{N -1} x_k(x_{k+1} - x_{k}) + \alpha \, |x_k|^2 \Delta t,
+# $$
+# which gives the MLE estimator
+# $$
+# \hat \alpha_N = \frac{\sum_{k=0}^{N-1} X_K(X_{K+1} - X_K )} {\Delta t \sum_{k=0}^{N-1} |X_k|^2}.
+# $$
+
+# +
+Δt = 0.01
+x0 = 0
+α = 1
+
+def ou_trajectory(M, N):
+    x = np.zeros((N + 1, M))
+    ξ = np.random.randn(N, M)
+    x[0] = x0
+    for i in range(N):
+        x[i+1] = x[i] - α * Δt * x[i] + np.sqrt(Δt) * ξ[i]
+    return x
+
+# Calculate estimator
+M, N = 10**2, 10**5
+x = ou_trajectory(M, N)
+dx = np.diff(x, axis=0)
+num = np.cumsum(x[1:-1]*dx[1:], axis=0)
+denom = np.cumsum(x[1:-1]**2, axis=0)
+estimator = (1/Δt) * num / denom
+
+mean = np.mean(estimator, axis=1)
+variance = np.var(estimator, axis=1)
+Ns = np.arange(2, N + 1)
+
+fig, [ax1, ax2] = plt.subplots(2)
+ax1.set_xlabel('$N$')
+ax1.set_xscale('log', basex=2)
+ax1.plot(Ns, mean, marker='.', label=r"$E [\hat \alpha_N]$")
+ax1.plot(Ns, 0*Ns + α, ls='--')
+ax1.legend()
+ax2.set_xlabel('$N$')
+ax2.set_xscale('log', basex=2)
+ax2.set_yscale('log', basey=2)
+ax2.plot(Ns, variance, marker='.',
+         label=r"$var[\hat \alpha_N]$")
+ax2.legend()
+plt.show()
