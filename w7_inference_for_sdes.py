@@ -203,3 +203,4 @@ ax2.plot(Ns, variance, marker='.',
          label=r"$var[\hat \alpha_N]$")
 ax2.legend()
 plt.show()
+# -
