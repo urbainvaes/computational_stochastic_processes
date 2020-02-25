@@ -16,6 +16,7 @@ matplotlib.rc('lines', linewidth=2)
 matplotlib.rc('lines', markersize=12)
 matplotlib.rc('figure.subplot', hspace=.3)
 matplotlib.rc('figure.subplot', wspace=.1)
+np.random.seed(0)
 # -
 # # Inferring the diffusion coefficient
 # We illustrate the method seen in class for the simplest possible SDE with constant diffusion:
@@ -162,7 +163,7 @@ plt.show()
 # $$
 # which gives the MLE estimator
 # $$
-# \hat \alpha_N = \frac{\sum_{k=0}^{N-1} X_K(X_{K+1} - X_K )} {\Delta t \sum_{k=0}^{N-1} |X_k|^2}.
+# \hat \alpha_N = - \frac{\sum_{k=0}^{N-1} X_K(X_{K+1} - X_K )} {\Delta t \sum_{k=0}^{N-1} |X_k|^2}.
 # $$
 
 # +
@@ -184,22 +185,23 @@ x = ou_trajectory(M, N)
 dx = np.diff(x, axis=0)
 num = np.cumsum(x[1:-1]*dx[1:], axis=0)
 denom = np.cumsum(x[1:-1]**2, axis=0)
-estimator = (1/Δt) * num / denom
+estimator = - (1/Δt) * num / denom
 
 mean = np.mean(estimator, axis=1)
 variance = np.var(estimator, axis=1)
 Ns = np.arange(2, N + 1)
 
+cutoff = 100
 fig, [ax1, ax2] = plt.subplots(2)
 ax1.set_xlabel('$N$')
 ax1.set_xscale('log', basex=2)
-ax1.plot(Ns, mean, marker='.', label=r"$E [\hat \alpha_N]$")
-ax1.plot(Ns, 0*Ns + α, ls='--')
+ax1.plot(Ns[cutoff:], mean[cutoff:], marker='.', label=r"$E [\hat \alpha_N]$")
+ax1.plot(Ns[cutoff:], 0*Ns[cutoff:] + α, ls='--')
 ax1.legend()
 ax2.set_xlabel('$N$')
 ax2.set_xscale('log', basex=2)
 ax2.set_yscale('log', basey=2)
-ax2.plot(Ns, variance, marker='.',
+ax2.plot(Ns[cutoff:], variance[cutoff:], marker='.',
          label=r"$var[\hat \alpha_N]$")
 ax2.legend()
 plt.show()
