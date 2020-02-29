@@ -115,18 +115,18 @@ plt.show()
 #
 # Calculating the density w.r.t. the law of Brownian motion is however convenient,
 # because the density is given directly by Girsanov's theorem.
-# We emphasize again there is no analogue of Lebesgue measure on an infinite-dimensional Banach spaces,
+# We emphasize again that there is no analogue of Lebesgue measure on an infinite-dimensional Banach spaces,
 # which is the reason why we need to write the density w.r.t. another measure in the first place.
 #
-# The maximum likelihood estimator is the parameter $b$ that maximimizes the likelihood $M_T(X; b)$,
+# The maximum likelihood estimator is the parameter $b$ that maximimizes the likelihood $\frac{\d \mathbb P}{\d \mathbb W}(X; b)$,
 # where $X$ is a given observation.
-# In our case, maximization produces the estimator
+# In the case under consideration, maximization produces the estimator
 # $$
 #     \hat b = X_T/T.
 # $$
 # This estimator happens to be unbiased, but this is usually not the case in more realistic situations.
 # Note that, unlike inference for the diffusion coefficient,
-# where we could obtain an estimation that is arbitrarily precise if we can have access to the solution at every $t \in [0, T]$,
+# where we could obtain an estimation that is arbitrarily precise if we have access to the solution at every $t \in [0, T]$,
 # the only way to drive the variance of the maximum likelihood estimator for the drift to zero is to obtain more replicas or to consider $T \to \infty$.
 #
 # Suppose that $X^{(1)}, \dotsc, X^{(J)}$ independently drawn from $\mathbb P_X$:
