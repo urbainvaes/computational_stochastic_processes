@@ -118,7 +118,7 @@ plt.show()
 # We emphasize again that there is no analogue of Lebesgue measure on an infinite-dimensional Banach spaces,
 # which is the reason why we need to write the density w.r.t. another measure in the first place.
 #
-# The maximum likelihood estimator is the parameter $b$ that maximimizes the likelihood $\frac{\d \mathbb P}{\d \mathbb W}(X; b)$,
+# The maximum likelihood estimator is the parameter $b$ that maximimizes the likelihood $\frac{\d \mathbb P_X}{\d \mathbb P_W}(X; b)$,
 # where $X$ is a given observation.
 # In the case under consideration, maximization produces the estimator
 # $$
