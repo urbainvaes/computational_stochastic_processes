@@ -265,6 +265,9 @@ plt.show()
 #   and a low influence of the prior distribution.
 
 # +
+# Fix seed
+np.random.seed(0)
+
 # Number of observations
 J = 100
 
@@ -277,7 +280,7 @@ X = μ + σ * np.random.randn(J)
 # Parameters space for the plot
 n = 300
 μ_min, μ_max = -2, 3
-σ2_min, σ2_max = .01, 1.1
+σ2_min, σ2_max = .05, 1.1
 μs = np.linspace(μ_min, μ_max, n)
 σ2s = np.linspace(σ2_min, σ2_max, n)
 μs, σ2s = np.meshgrid(μs, σ2s)
@@ -324,7 +327,7 @@ def do_nothing():
 matplotlib.rc('figure', figsize=(12, 8))
 fig, ax = plt.subplots()
 fig.subplots_adjust(left=.1, bottom=.1, right=.98, top=.95)
-anim = animation.FuncAnimation(fig, plot, np.arange(2, J, 2), 
+anim = animation.FuncAnimation(fig, plot, np.arange(2, J, 2),
                                init_func=do_nothing, repeat=True)
 
 # For Python
@@ -333,3 +336,4 @@ anim = animation.FuncAnimation(fig, plot, np.arange(2, J, 2),
 # For the Jupyter notebook
 plt.close(fig)
 anim
+# -
