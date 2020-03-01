@@ -277,7 +277,7 @@ X = μ + σ * np.random.randn(J)
 # Parameters space for the plot
 n = 300
 μ_min, μ_max = -2, 3
-σ2_min, σ2_max = 0, 1.1
+σ2_min, σ2_max = .01, 1.1
 μs = np.linspace(μ_min, μ_max, n)
 σ2s = np.linspace(σ2_min, σ2_max, n)
 μs, σ2s = np.meshgrid(μs, σ2s)
@@ -305,22 +305,27 @@ def plot(K):
     # True value
     ax.scatter(μ, σ**2, label='True value')
 
-    map_estimator = scipy.optimize.fmin(lambda v: - posterior(v[0], v[1], K), [μ, σ**2])
+    map_estimator = scipy.optimize.fmin(lambda v: - posterior(v[0], v[1], K), [μ, σ**2], disp=False)
     ax.scatter(map_estimator[0], map_estimator[1], label='MAP')
 
     if K > 0:
-        mle_estimator = scipy.optimize.fmin(lambda v: - likelihood(v[0], v[1], K), [μ, σ**2])
+        mle_estimator = scipy.optimize.fmin(lambda v: - likelihood(v[0], v[1], K), [μ, σ**2], disp=False)
         ax.scatter(mle_estimator[0], mle_estimator[1], label='MLE')
 
     ax.set_title("$K = {}$".format(K))
+    ax.set_xlabel(r"$\mu$")
+    ax.set_ylabel(r"$\sigma^2$")
     ax.legend()
 
 def do_nothing():
     pass
 
 # Create animation
+matplotlib.rc('figure', figsize=(12, 8))
 fig, ax = plt.subplots()
-anim = animation.FuncAnimation(fig, plot, np.arange(3, J, 2), init_func=do_nothing, repeat=True)
+fig.subplots_adjust(left=.1, bottom=.1, right=.98, top=.95)
+anim = animation.FuncAnimation(fig, plot, np.arange(2, J, 2), 
+                               init_func=do_nothing, repeat=True)
 
 # For Python
 # plt.show()
