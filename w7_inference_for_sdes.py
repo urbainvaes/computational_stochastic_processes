@@ -4,8 +4,12 @@
 # This work is licensed under the terms of the MIT license.
 # For a copy, see <https://opensource.org/licenses/MIT>.
 import numpy as np
+import scipy.stats
+import scipy.integrate
+import scipy.optimize
 import matplotlib
 import matplotlib.pyplot as plt
+import matplotlib.animation as animation
 # -
 
 # +
@@ -16,6 +20,7 @@ matplotlib.rc('lines', linewidth=2)
 matplotlib.rc('lines', markersize=12)
 matplotlib.rc('figure.subplot', hspace=.3)
 matplotlib.rc('figure.subplot', wspace=.1)
+matplotlib.rc('animation', html='html5')
 np.random.seed(0)
 # -
 # # Inferring the diffusion coefficient
@@ -206,3 +211,120 @@ ax2.plot(Ns[cutoff:], variance[cutoff:],
 ax2.legend()
 plt.show()
 # -
+# # Introduction to the Bayesian approach
+# Bayesian inference for the drift coefficient is explored in the assessed coursework,
+# and here we present only a simple example of Bayesian inference for an unrelated toy problem.
+# Assume that $\mathbf X = (X^{(1)}, \dots, X^{(J)})$ are i.i.d. real-valued random variables drawn from $\mathcal N(\mu, \sigma^2)$,
+# where $\mu$ and $\sigma^2$ are parameters to estimate based on this data.
+# Assume also that we hold a prior belief that $\mu \sim \mathcal N(0, 1)$ and $\sigma^2 \sim U(0, 1)$, independently of $\mu$.
+# With the Bayesian approach, we view $(\mu, \sigma^2, X^{(1)}, \dots, X^{(J)})$ as a random vector in $\mathbb R^{J+2}$.
+# Using the notation $\mathbf x = (x^{(1)}, \dots, x^{(J)})$,
+# the PDF of this random vector is given by
+# $$
+#  f_{\mu, \sigma^2, \mathbf x}(m, s^2, \mathbf x)
+#  = f_{\mu, \sigma^2}(m, s^2) \, f_{\mathbf x | \mu, \sigma^2} (\mathbf x | m, s^2) = g(m; 0, 1) \, I_{[0, 1]}(s^2) \, \prod_{j=1}^{J} g(x^{(j)}; m, s^2),
+# $$
+# where $g(\alpha, \beta^2)$, for any parameters $\alpha \in \mathbb R$ and $\beta \in \mathbb R_{>0}$, denotes the PDF of $\mathcal N(\alpha, \beta^2)$.
+# The [conditional distribution](https://en.wikipedia.org/wiki/Conditional_probability_distribution) of $\mu, \sigma^2$ given the data is thus given by:
+# $$
+#  f_{\mu, \sigma^2 | \mathbf x}(m, s^2 | \mathbf x)
+#  = \frac{f_{\mu, \sigma^2, \mathbf x}(m, s^2, \mathbf x)}{f_{\mathbf x}(\mathbf x)}
+#  = \frac{f_{\mu, \sigma^2, \mathbf x}(m, s^2, \mathbf x)}{\int_{\mathbb R^2} f_{\mu, \sigma^2, \mathbf x}(\mu, \sigma^2, \mathbf x) \, \d \mu \, \d \sigma^2}.
+# $$
+# The denominator in this equation is independent of $m$ and $s^2$; it is merely a normalization constant.
+# Note that the two previous equations can be combined to obtain
+# $$
+#   f_{\mathbf x}(\mathbf x) \, f_{\mu, \sigma^2 | \mathbf x}(m, s^2 | \mathbf x)  = f_{\mu, \sigma^2}(m, s^2) \, f_{\mathbf x | \mu, \sigma^2} (\mathbf x | m, s^2),
+# $$
+# which is a continuous version of [Bayes' theorem](https://en.wikipedia.org/wiki/Bayes%27_theorem).
+# This equation is sometimes used as a starting point in order to find the expression of $f_{\mu, \sigma^2| \mathbf x}$.
+# For the problem under consideration,
+# $$
+#  f_{\mu, \sigma^2 | \mathbf x}(m, s^2 | \mathbf x)
+#  = \frac{g(m; 0, 1) \, I_{[0, 1]}(s^2) \, \prod_{j=1}^{J} g(x^{(j)}; m, s^2)}{\int_{\mathbb R^2} g(\mu; 0, 1) \, I_{[0, 1]}(\sigma^2) \, \prod_{j=1}^{J} g(x^{(j)}; \mu, \sigma^2) \, \d \mu \, \d \sigma^2}.
+# $$
+# As mentioned above, the denominator is independent of $\mu$ and $\sigma^2$.
+# Usually, if one wishes to do uncertainty quantification,
+# the output of the Bayesian inference is simply the conditional distribution evaluated at the data, $f_{\mu, \sigma^2 | \mathbf X}$.
+# This distribution, a PDF on the state-space of the unknown parameters,
+# is called *Bayesian posterior*. A few remarks are in order:
+#
+# - In general, it is not always possible to calculate the normalization constant (denominator) explicitly,
+#   although this could be achieved by a simple 2-dimensional quadrature in this simple examlpe.
+#
+# - The Bayesian posterior can be employed to define a point estimator (i.e. just one value)
+#   obtained as the pointwise maximizer of the posterior distribution — this is the *maximum a posteriori estimator* (MAP).
+#   Calculating the MAP does not require the calculation of the normalization constant:
+#   $$
+#       (\hat \mu, \hat \sigma^2)_{MAP} := \arg \max_{\mu, \sigma^2} f_{\mu, \sigma^2}(m, s^2) \, f_{\mathbf x | \mu, \sigma^2} (\mathbf x | m, s^2).
+#   $$
+#   Notice that the MAP coincides with the MLE in the case of a uniform prior (the prior here is $f_{\mu, \sigma^2}$) over $\Theta$,
+#   the space of admissible parameters in the general definition of the MLE.
+#
+# - A large value of $J$ corresponds to a narrow posterior distribution
+#   and a low influence of the prior distribution.
+
+# +
+# Number of observations
+J = 100
+
+# True value of the parameters
+μ, σ = 1, np.sqrt(.4)
+
+# Observations
+X = μ + σ * np.random.randn(J)
+
+# Parameters space for the plot
+n = 300
+μ_min, μ_max = -2, 3
+σ2_min, σ2_max = 0, 1.1
+μs = np.linspace(μ_min, μ_max, n)
+σ2s = np.linspace(σ2_min, σ2_max, n)
+μs, σ2s = np.meshgrid(μs, σ2s)
+
+# Prior density
+prior = lambda μ, σ2: 1/np.sqrt(2*np.pi) * np.exp(- μ**2 /2) * (σ2 >= 0) * (σ2 <= 1)
+
+# Likelihood evaluated at the first K data
+def likelihood(μ, σ2, K):
+    result = 1
+    for j in range(K):
+        result *= 1/np.sqrt(2*np.pi*abs(σ2)) * np.exp(- (X[j] - μ)**2 /σ2/2)
+    return result
+
+
+# Non-normalized posterior distribution based on the frist K data
+posterior = lambda μ, σ2, K: prior(μ, σ2) * likelihood(μ, σ2, K)
+
+def plot(K):
+    ax.clear()
+
+    # Posterior distribution
+    ax.contourf(μs, σ2s, posterior(μs, σ2s, K), levels=20)
+
+    # True value
+    ax.scatter(μ, σ**2, label='True value')
+
+    map_estimator = scipy.optimize.fmin(lambda v: - posterior(v[0], v[1], K), [μ, σ**2])
+    ax.scatter(map_estimator[0], map_estimator[1], label='MAP')
+
+    if K > 0:
+        mle_estimator = scipy.optimize.fmin(lambda v: - likelihood(v[0], v[1], K), [μ, σ**2])
+        ax.scatter(mle_estimator[0], mle_estimator[1], label='MLE')
+
+    ax.set_title("$K = {}$".format(K))
+    ax.legend()
+
+def do_nothing():
+    pass
+
+# Create animation
+fig, ax = plt.subplots()
+anim = animation.FuncAnimation(fig, plot, np.arange(3, J, 2), init_func=do_nothing, repeat=True)
+
+# For Python
+# plt.show()
+
+# For the Jupyter notebook
+plt.close(fig)
+anim
