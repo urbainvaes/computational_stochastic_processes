@@ -255,9 +255,9 @@ plt.show()
 # - The Bayesian posterior can be employed to define a point estimator (i.e. just one value)
 #   obtained as the pointwise maximizer of the posterior distribution — this is the *maximum a posteriori estimator* (MAP).
 #   Calculating the MAP does not require the calculation of the normalization constant:
-#   $$
-#       (\hat \mu, \hat \sigma^2)_{MAP} := arg\max_{\mu, \sigma^2} f_{\mu, \sigma^2}(m, s^2) \, f_{\mathbf X | \mu, \sigma^2} (\mathbf x | m, s^2).
-#   $$
+# $$
+# 1 + 1 = 2
+# $$
 #   Notice that the MAP coincides with the MLE in the case of a uniform prior (the prior here is $f_{\mu, \sigma^2}$) over $\Theta$,
 #   the space of admissible parameters in the general definition of the MLE.
 #
