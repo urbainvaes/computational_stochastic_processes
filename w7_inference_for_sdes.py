@@ -221,26 +221,26 @@ plt.show()
 # Using the notation $\mathbf x = (x^{(1)}, \dots, x^{(J)})$,
 # the PDF of this random vector is given by
 # $$
-#  f_{\mu, \sigma^2, \mathbf x}(m, s^2, \mathbf x)
-#  = f_{\mu, \sigma^2}(m, s^2) \, f_{\mathbf x | \mu, \sigma^2} (\mathbf x | m, s^2) = g(m; 0, 1) \, I_{[0, 1]}(s^2) \, \prod_{j=1}^{J} g(x^{(j)}; m, s^2),
+#  f_{\mu, \sigma^2, \mathbf X}(m, s^2, \mathbf x)
+#  = f_{\mu, \sigma^2}(m, s^2) \, f_{\mathbf X | \mu, \sigma^2} (\mathbf x | m, s^2) = g(m; 0, 1) \, I_{[0, 1]}(s^2) \, \prod_{j=1}^{J} g(x^{(j)}; m, s^2),
 # $$
-# where $g(\alpha, \beta^2)$, for any parameters $\alpha \in \mathbb R$ and $\beta \in \mathbb R_{>0}$, denotes the PDF of $\mathcal N(\alpha, \beta^2)$.
+# where $g(x; \alpha, \beta^2)$, for any parameters $\alpha \in \mathbb R$ and $\beta \in \mathbb R_{>0}$, denotes the PDF of $\mathcal N(\alpha, \beta^2)$.
 # The [conditional distribution](https://en.wikipedia.org/wiki/Conditional_probability_distribution) of $\mu, \sigma^2$ given the data is thus given by:
 # $$
-#  f_{\mu, \sigma^2 | \mathbf x}(m, s^2 | \mathbf x)
-#  = \frac{f_{\mu, \sigma^2, \mathbf x}(m, s^2, \mathbf x)}{f_{\mathbf x}(\mathbf x)}
-#  = \frac{f_{\mu, \sigma^2, \mathbf x}(m, s^2, \mathbf x)}{\int_{\mathbb R^2} f_{\mu, \sigma^2, \mathbf x}(\mu, \sigma^2, \mathbf x) \, \d \mu \, \d \sigma^2}.
+#  f_{\mu, \sigma^2 | \mathbf X}(m, s^2 | \mathbf x)
+#  = \frac{f_{\mu, \sigma^2, \mathbf X}(m, s^2, \mathbf x)}{f_{\mathbf X}(\mathbf x)}
+#  = \frac{f_{\mu, \sigma^2, \mathbf X}(m, s^2, \mathbf x)}{\int_{\mathbb R^2} f_{\mu, \sigma^2, \mathbf X}(\mu, \sigma^2, \mathbf x) \, \d \mu \, \d \sigma^2}.
 # $$
 # The denominator in this equation is independent of $m$ and $s^2$; it is merely a normalization constant.
 # Note that the two previous equations can be combined to obtain
 # $$
-#   f_{\mathbf x}(\mathbf x) \, f_{\mu, \sigma^2 | \mathbf x}(m, s^2 | \mathbf x)  = f_{\mu, \sigma^2}(m, s^2) \, f_{\mathbf x | \mu, \sigma^2} (\mathbf x | m, s^2),
+#   f_{\mathbf X}(\mathbf x) \, f_{\mu, \sigma^2 | \mathbf X}(m, s^2 | \mathbf x)  = f_{\mu, \sigma^2}(m, s^2) \, f_{\mathbf X | \mu, \sigma^2} (\mathbf x | m, s^2),
 # $$
 # which is a continuous version of [Bayes' theorem](https://en.wikipedia.org/wiki/Bayes%27_theorem).
-# This equation is sometimes used as a starting point in order to find the expression of $f_{\mu, \sigma^2| \mathbf x}$.
+# This equation is sometimes used as a starting point in order to find the expression of $f_{\mu, \sigma^2| \mathbf X}$.
 # For the problem under consideration,
 # $$
-#  f_{\mu, \sigma^2 | \mathbf x}(m, s^2 | \mathbf x)
+#  f_{\mu, \sigma^2 | \mathbf X}(m, s^2 | \mathbf x)
 #  = \frac{g(m; 0, 1) \, I_{[0, 1]}(s^2) \, \prod_{j=1}^{J} g(x^{(j)}; m, s^2)}{\int_{\mathbb R^2} g(\mu; 0, 1) \, I_{[0, 1]}(\sigma^2) \, \prod_{j=1}^{J} g(x^{(j)}; \mu, \sigma^2) \, \d \mu \, \d \sigma^2}.
 # $$
 # As mentioned above, the denominator is independent of $\mu$ and $\sigma^2$.
@@ -256,7 +256,7 @@ plt.show()
 #   obtained as the pointwise maximizer of the posterior distribution — this is the *maximum a posteriori estimator* (MAP).
 #   Calculating the MAP does not require the calculation of the normalization constant:
 #   $$
-#       (\hat \mu, \hat \sigma^2)_{MAP} := \mathrm{arg}\max_{\mu, \sigma^2} f_{\mu, \sigma^2}(m, s^2) \, f_{\mathbf x | \mu, \sigma^2} (\mathbf x | m, s^2).
+#       (\hat \mu, \hat \sigma^2)_{MAP} := \mathrm{arg}\max_{\mu, \sigma^2} f_{\mu, \sigma^2}(m, s^2) \, f_{\mathbf X | \mu, \sigma^2} (\mathbf x | m, s^2).
 #   $$
 #   Notice that the MAP coincides with the MLE in the case of a uniform prior (the prior here is $f_{\mu, \sigma^2}$) over $\Theta$,
 #   the space of admissible parameters in the general definition of the MLE.
