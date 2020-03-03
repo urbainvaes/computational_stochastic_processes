@@ -108,7 +108,7 @@ def run_tests(T, action='plot_evolution'):
 
     # For notebook
     plt.close(fig)
-    anim
+    return anim
 
 # -
 
