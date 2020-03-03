@@ -3,7 +3,9 @@
 #
 # This work is licensed under the terms of the MIT license.
 # For a copy, see <https://opensource.org/licenses/MIT>.
+import time
 import numpy as np
+import scipy.stats
 import networkx as nx
 import matplotlib
 import matplotlib.pyplot as plt
@@ -21,46 +23,120 @@ matplotlib.rc('figure.subplot', wspace=.1)
 matplotlib.rc('animation', html='html5')
 np.random.seed(0)
 
-G = nx.DiGraph()
-G.add_edges_from([('A', 'C')], weight=1)
-G.add_edges_from([('B', 'A')], weight=.5)
-G.add_edges_from([('B', 'C')], weight=.6)
-G.add_edges_from([('C', 'B')], weight=.7)
-G.add_edges_from([('C', 'D')], weight=.8)
-G.add_edges_from([('D', 'C')], weight=.9)
-G.add_edges_from([('D', 'E')], weight=.5)
-G.add_edges_from([('E', 'C')], weight=1)
+# T is the transition matrix
+def run_tests(T, action='plot_evolution'):
 
-pos = {'A': (0, 0), 'B': (0, 2), 'C': (1, 1), 'D': (2, 0), 'E': (2, 2)}
+    G = nx.DiGraph()
+    for i, v in enumerate(T):
+        for j, n in enumerate(v):
+            if n != 0:
+                G.add_edges_from([(i, j)], weight=n)
 
-fig, ax = plt.subplots()
+    pos = {0: (0, 0), 1: (0, 2), 2: (1, 1), 3: (2, 0), 4: (2, 2)}
 
-kwargs = {
-        'fontsize': 18,
-        'horizontalalignment': 'center',
-        'verticalalignment': 'center',
-        'transform': ax.transAxes,
-        }
-text = ax.text(.3, .79, "1/2".format(0), **kwargs)
-text = ax.text(.3, .62, "1/2".format(0), **kwargs)
-text = ax.text(.3, .28, "1".format(0), **kwargs)
-text = ax.text(.7, .79, "1".format(0), **kwargs)
-text = ax.text(.7, .38, "1/2".format(0), **kwargs)
-text = ax.text(.7, .20, "1/2".format(0), **kwargs)
+    def add_edges_labels(ax):
+        kwargs = {
+                'fontsize': 18,
+                'horizontalalignment': 'center',
+                'verticalalignment': 'center',
+                'transform': ax.transAxes,
+                }
 
-labels={}
-labels['A']=r'$a$'
-labels['B']=r'$b$'
-labels['C']=r'$c$'
-labels['D']=r'$d$'
-labels['E']=r'$\alpha$'
+        if T[1][2] != 0:
+            text = ax.text(.3, .62, "{}".format(T[1][2]), **kwargs)
+        text = ax.text(.05, .5, "{}".format(T[1][0]), **kwargs)
 
-labels = {'A': 1000, 'B': 0, 'C': 0, 'D': 0, 'E': 0}
-values = [labels[node] for node in G.nodes()]
+        if T[3][2] != 0:
+            text = ax.text(.7, .38, "{}".format(T[3][2]), **kwargs)
+        text = ax.text(.95, .5, "{}".format(T[3][4]), **kwargs)
 
-nx.draw_networkx_labels(G, pos, labels, font_size=16)
+        text = ax.text(.3, .79, "0.5", **kwargs)
+        text = ax.text(.3, .28, "1", **kwargs)
+        text = ax.text(.7, .79, "1", **kwargs)
+        text = ax.text(.7, .20, "0.5", **kwargs)
 
-nx.draw(G, pos, node_color=values, node_size=1500, connectionstyle='arc3, rad=0.1', ax=ax)
-# nx.draw(G, pos, node_size=3000, connectionstyle='arc3, rad=0.1', ax=ax)
+    # Number of "particles"
+    N = 10**4
 
-plt.show()
+    # Number of iterations
+    n = 100
+
+    # Number of nodes
+    K = len(T)
+
+    # values[i] contains the number of particles at the nodes at iteration i
+    values = np.zeros((n + 1, K), dtype=int)
+    values[0] = [N, 0, 0, 0, 0]
+
+    # Generalized Bernoulli distribution for each node
+    gen_bernoulli = scipy.stats.rv_discrete
+    draw_next = [gen_bernoulli(values=(range(K), v)) for v in T]
+
+    # Simulation of the Markov chain
+    for i in range(n):
+        for j, v in enumerate(T):
+            next_step = draw_next[j].rvs(size=values[i][j])
+            for k in next_step:
+                values[i+1][k] += 1
+
+    def plot_evolution(i):
+        ax.clear()
+        add_edges_labels(ax)
+        labels = {j: v for j, v in enumerate(values[i])}
+        nx.draw_networkx_labels(G, pos, labels=labels, font_size=16, ax=ax)
+        cmap = matplotlib.cm.get_cmap('viridis')
+        nx.draw(G, pos, node_color=values[i], alpha=.5, node_size=3000,
+                connectionstyle='arc3, rad=0.1', ax=ax, cmap=cmap)
+        ax.set_title("Discrete time: ${}$".format(i))
+
+    def plot_pmf(i):
+        ax.clear()
+        ax.set_title("Probability mass function at iteration ${}$".format(i))
+        ax.set_xlabel("Node index")
+        ax.stem(range(K), values[i]/N, use_line_collection=True)
+        ax.set_ylim(0, 1.1)
+
+    # Create animation
+    matplotlib.rc('figure', figsize=(12, 8))
+    fig, ax = plt.subplots()
+    fig.subplots_adjust(left=.1, bottom=.1, right=.98, top=.95)
+    iterate = plot_evolution if action == 'plot_evolution' else plot_pmf
+    anim = animation.FuncAnimation(fig, iterate, np.arange(n),
+                                   init_func=lambda: None, repeat=True)
+    # For Python
+    # plt.show()
+
+    # For notebook
+    plt.close(fig)
+    anim
+
+# -
+
+# +
+T = [[0, 0, 1, 0, 0], [1, 0, 0, 0, 0],
+     [0, .5, 0, .5, 0], [0, 0, 0, 0, 1], [0, 0, 1, 0, 0]]
+run_tests(T, action='plot_evolution')
+# -
+
+# +
+run_tests(T, action='plot_pmf')
+# -
+
+# +
+T = [[0, 0, 1, 0, 0], [.5, 0, .5, 0, 0],
+     [0, .5, 0, .5, 0], [0, 0, .5, 0, .5], [0, 0, 1, 0, 0]]
+run_tests(T, action='plot_evolution')
+# -
+
+# +
+run_tests(T, action='plot_pmf')
+# -
+
+T = [[0, 0, 1, 0, 0], [1, 0, 0, 0, 0],
+     [0, .5, 0, .5, 0], [0, 0, .5, 0, .5], [0, 0, 1, 0, 0]]
+run_tests(T, action='plot_evolution')
+# -
+
+# +
+run_tests(T, action='plot_pmf')
+# -
