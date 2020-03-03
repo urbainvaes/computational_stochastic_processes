@@ -62,4 +62,5 @@ nx.draw_networkx_labels(G, pos, labels, font_size=16)
 
 nx.draw(G, pos, node_color=values, node_size=1500, connectionstyle='arc3, rad=0.1', ax=ax)
 # nx.draw(G, pos, node_size=3000, connectionstyle='arc3, rad=0.1', ax=ax)
+
 plt.show()
