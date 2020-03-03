@@ -132,6 +132,7 @@ run_tests(T, action='plot_evolution')
 run_tests(T, action='plot_pmf')
 # -
 
+# +
 T = [[0, 0, 1, 0, 0], [1, 0, 0, 0, 0],
      [0, .5, 0, .5, 0], [0, 0, .5, 0, .5], [0, 0, 1, 0, 0]]
 run_tests(T, action='plot_evolution')
