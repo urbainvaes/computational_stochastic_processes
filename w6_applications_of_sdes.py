@@ -117,12 +117,9 @@ def plot_time(i):
         line_mc.set_ydata(mc_estimator[:, i])
         text.set_text(r"$t = {:.4f}$".format(t[i]))
 
-def do_nothing():
-    pass
-
 # Create animation
 anim = animation.FuncAnimation(fig, plot_time, list(range(N + 1)),
-                               init_func=do_nothing, repeat=True)
+                               init_func=lambda: None, repeat=True)
 
 # For the Jupyter notebook
 plt.close(fig)

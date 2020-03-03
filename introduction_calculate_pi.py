@@ -87,17 +87,12 @@ def add_N_points(i):
 
     print(estimator)
 
-
-# Nothing to do for the initialization
-def do_nothing():
-    pass
-
 # FuncAnimation will be called with range(n)
 n = int(100)
 
 # Create animation
 anim = animation.FuncAnimation(fig, add_N_points, n,
-                               init_func=do_nothing, repeat=False)
+                               init_func=lambda: None, repeat=False)
 
 writer = animation.writers['ffmpeg'](fps=2, codec='libvpx-vp9', bitrate=3000)
 

@@ -320,15 +320,12 @@ def plot(K):
     ax.set_ylabel(r"$\sigma^2$")
     ax.legend()
 
-def do_nothing():
-    pass
-
 # Create animation
 matplotlib.rc('figure', figsize=(12, 8))
 fig, ax = plt.subplots()
 fig.subplots_adjust(left=.1, bottom=.1, right=.98, top=.95)
 anim = animation.FuncAnimation(fig, plot, np.arange(2, J, 2),
-                               init_func=do_nothing, repeat=True)
+                               init_func=lambda: None, repeat=True)
 
 # For Python
 # plt.show()
