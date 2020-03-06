@@ -109,11 +109,11 @@ def run_tests(T, action='plot_evolution'):
     anim = animation.FuncAnimation(fig, iterate, np.arange(n),
                                    init_func=lambda: None, repeat=True)
     # For Python
-    plt.show()
+    # plt.show()
 
     # For notebook
-    # plt.close(fig)
-    # return anim
+    plt.close(fig)
+    return anim
 
 # -
 
