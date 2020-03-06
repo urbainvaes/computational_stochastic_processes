@@ -66,7 +66,10 @@ def run_tests(T, action='plot_evolution'):
 
     # values[i] contains the number of particles at the nodes at iteration i
     values = np.zeros((n + 1, K), dtype=int)
+    exact = np.zeros((n + 1, K))
     values[0] = [N, 0, 0, 0, 0]
+    exact[0] = [1, 0, 0, 0, 0]
+    tr = np.array(T)
 
     # Generalized Bernoulli distribution for each node
     gen_bernoulli = scipy.stats.rv_discrete
@@ -78,6 +81,7 @@ def run_tests(T, action='plot_evolution'):
             next_step = draw_next[j].rvs(size=values[i][j])
             for k in next_step:
                 values[i+1][k] += 1
+        exact[i+1] = tr.T.dot(exact[i])
 
     def plot_evolution(i):
         ax.clear()
@@ -94,6 +98,7 @@ def run_tests(T, action='plot_evolution'):
         ax.set_title("Probability mass function at iteration ${}$".format(i))
         ax.set_xlabel("Node index")
         ax.stem(range(K), values[i]/N, use_line_collection=True)
+        ax.stem(np.arange(K) + .1, exact[i], use_line_collection=True)
         ax.set_ylim(0, 1.1)
 
     # Create animation
@@ -104,11 +109,11 @@ def run_tests(T, action='plot_evolution'):
     anim = animation.FuncAnimation(fig, iterate, np.arange(n),
                                    init_func=lambda: None, repeat=True)
     # For Python
-    # plt.show()
+    plt.show()
 
     # For notebook
-    plt.close(fig)
-    return anim
+    # plt.close(fig)
+    # return anim
 
 # -
 
