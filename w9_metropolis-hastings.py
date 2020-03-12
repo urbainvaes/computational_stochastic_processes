@@ -112,7 +112,8 @@ def anim_pmf(x, n_steps=n):
     plt.close(fig)
     return anim
 # -
-# # Independence sampler
+# ## Evolution of the PMF
+# ### Independence sampler
 # In the animation, we plot the evolution of the pmf of the Markov chain.
 # We could have calculated the exact probability mass function (pmf) at each
 # iteration exactly by constructing the transition matrix and left-multiplying
@@ -124,7 +125,7 @@ def anim_pmf(x, n_steps=n):
 # +
 anim_pmf(x_indep, n_steps=20)
 # -
-# # Random Walk Metropolis-Hastings
+# ### Random Walk Metropolis-Hastings
 # Here we use a proposal corresponding to a random walk on the finite domain,
 # with periodic boundary condition. More precisely, we use the proposal density (pmf)
 # $$
@@ -138,7 +139,7 @@ anim_pmf(x_indep, n_steps=20)
 # +
 anim_pmf(x_rwmh)
 # -
-# # Markov chain Monte Carlo
+# ## Markov chain Monte Carlo
 # So far, we checked only that the Metropolis-Hastings algorithm produces a
 # Markov chain whose associated PMF converges to the target distribution as the discrete time tends to infinity,
 # indicating that the method is suitable for sampling: regardless of $X_0$,
@@ -185,15 +186,18 @@ def anim_averages(x, n_steps=100):
                                    interval=600, init_func=lambda: None, repeat=True)
 
     # For Python
-    plt.show()
+    # plt.show()
 
     # For notebook
-    # plt.close(fig)
-    # return anim
+    plt.close(fig)
+    return anim
+# -
+# ### Independence sampler
 
 # +
 anim_averages(x_indep, n_steps=20)
 # -
+# ### Random Walk Metropolis-Hastings
 
 # +
 anim_averages(x_rwmh, n_steps=20)
