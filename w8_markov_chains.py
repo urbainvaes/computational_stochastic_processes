@@ -111,9 +111,9 @@ def run_tests(T, action='plot_evolution'):
     # For Python
     # plt.show()
 
-    For notebook
+    # For notebook
     plt.close(fig)
-    # return anim
+    return anim
 
 # -
 
@@ -146,4 +146,3 @@ run_tests(T, action='plot_evolution')
 # +
 run_tests(T, action='plot_pmf')
 # -
-
