@@ -97,9 +97,12 @@ def run_tests(T, action='plot_evolution'):
         ax.clear()
         ax.set_title("Probability mass function at iteration ${}$".format(i))
         ax.set_xlabel("Node index")
-        ax.stem(range(K), values[i]/N, use_line_collection=True)
-        ax.stem(np.arange(K) + .1, exact[i], use_line_collection=True)
+        ax.stem(np.arange(K) - .05, values[i]/N, use_line_collection=True,
+                label="MC approximation", linefmt='C0-', markerfmt='C0o')
+        ax.stem(np.arange(K) + .05, exact[i], use_line_collection=True,
+                label="Exact", linefmt='C1-', markerfmt='C1o')
         ax.set_ylim(0, 1.1)
+        ax.legend()
 
     # Create animation
     matplotlib.rc('figure', figsize=(12, 8))
@@ -109,11 +112,11 @@ def run_tests(T, action='plot_evolution'):
     anim = animation.FuncAnimation(fig, iterate, np.arange(n),
                                    init_func=lambda: None, repeat=True)
     # For Python
-    # plt.show()
+    plt.show()
 
     # For notebook
-    plt.close(fig)
-    return anim
+    # plt.close(fig)
+    # return anim
 
 # -
 
