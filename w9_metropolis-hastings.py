@@ -50,7 +50,7 @@ def Metropolis_Hastings(n, J, π, x0, q, q_sampler):
 
 # # Discrete state space
 # We begin by illustrating the Metropolis-Hastings algorithm in the finite state space
-# $\{0, \dotsc, N\}$, for some natural number $N$.
+# $\{0, \dotsc, N-1\}$, for some natural number $N$.
 
 # +
 # Number of particles
@@ -138,6 +138,18 @@ anim_pmf(x_indep, n_steps=20)
 # +
 anim_pmf(x_rwmh)
 # -
+# # Markov chain Monte Carlo
+# So far, we checked only that the Metropolis-Hastings algorithm produces a
+# Markov chain whose associated PMF converges to the target distribution as the discrete time tends to infinity,
+# indicating that the method is suitable for sampling: regardless of $X_0$, for large time n the iterate $X_n$ is approximately distributed according to $\pi$.
+#
+# Now we will examine whether the Markov chain can be used to estimate $I := \mathbb E_{X \sim \pi} [f(X)]$ based on one long trajectory.
+# Since we are in a finite state space $S := \{0, \dotsc, N-1\}$,
+# any function on $S$ can be decomposed as $f(x) = \sum_{i=0}^{N-1} f(i) \, \delta_i(x)$,
+# i.e.\ as a linear combination of indicator function.
+# Below we estimate $I_i:= \mathbb E_{X \sim \pi} [\delta_i(X)] = \mathbb P_{X \sim \pi} [X = i]$ for $i = 0, \dotsc, N-1$
+# using the Markov chain Monte Carlo method.
+
 
 # Size of discrete state space
 # N = 24
