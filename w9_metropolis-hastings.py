@@ -7,7 +7,7 @@
 import time
 import numpy as np
 import scipy.stats
-import networkx as nx
+import scipy.integrate
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
@@ -51,6 +51,10 @@ def Metropolis_Hastings(n, J, π, x0, q, q_sampler):
 # # Discrete state space
 # We begin by illustrating the Metropolis-Hastings algorithm in the finite state space
 # $\{0, \dotsc, N-1\}$, for some natural number $N$.
+# Assume that we wish to sample from, or compute expectations with respect to, the following distribution:
+# $$
+# π(x) = \frac{1}{N}  \left(1 + .9 \, \sin \left( \frac{2 \pi x}{N} \right) \right).
+# $$
 
 # +
 # Number of particles
@@ -87,7 +91,7 @@ def anim_pmf(x, n_steps=n):
     def plot_pmf(i):
         ax.clear()
         ax.set_title("Probability mass function at iteration ${}$".format(i))
-        ax.set_xlabel("Node index")
+        ax.set_xlabel("$x$")
         x_plot, y_plot = np.unique(x[i], return_counts=True)
         ax.stem(x_plot - .05, y_plot/len(x[0]), use_line_collection=True,
                 label="Metropolis-Hastings runs", linefmt='C0-', markerfmt='C0o')
@@ -202,57 +206,120 @@ anim_averages(x_indep, n_steps=20)
 # +
 anim_averages(x_rwmh, n_steps=20)
 # -
+# # Continuous state space
+# Let us now consider an example in continuous state-space.
+# Suppose that we wish to sample from the bimodal distribution,
+# given by the following expression up to the normalization constant:
+# $$
+# \newcommand{\e}{\mathrm{e}}
+# \pi(x) = \e^{-(x^2 - 1)^2}.
+# $$
 
 # +
+# Number of particles
+J = 10000
 
-# # T is the transition matrix
-# T = np.zeros((N, N))
-# for i in range(N):
-#     for j in range(N):
-#         T[i, j] = p_indep(S[i], S[j])
-#
-# G = nx.DiGraph()
-# for i, v in enumerate(T):
-#     for j, n in enumerate(v):
-#         if n != 0:
-#             G.add_edges_from([(i, j)], weight=n)
-#
-# Δθ = 2*np.pi/N
-# pos = {i: (np.cos(i*Δθ), np.sin(i*Δθ)) for i in range(N)}
+# Number of steps
+n = 1000
 
+# Desired stationary distribution
+π = lambda x: np.exp(- (x**2 - 1)**2)
 
+# Calculate the normalization constant (this is not necessary for MH, but will
+# be useful for the plots)
+Z = scipy.integrate.quad(π, -np.inf, np.inf)[0]
 
+# Independence sampler with uniform proposal
+# Normalization not necessary (do you understand why?)
+q_indep = lambda x, y: np.exp(-y**2/2)
+q_indep_sampler = lambda x: np.random.randn(len(x))
 
+# Family of proposals for random walk Metropolis-Hastings
+q_rwmh = lambda δ: (lambda x, y: np.abs(y - x) < δ)
+q_rwmh_sampler = lambda δ: (lambda x: x + δ*(.5 - np.random.rand(len(x))))
 
+# Initial condition
+x0 = -1.
 
-# # Transition probability
-# def transition(q, α):
-#     def p(x, y):
-#         result = q(x, y) * α(x, y)
-#         if x == y:
-#             for z in S:
-#                 result += q(x, z) * (1 - α(x, z))
-#         return result
-#     return p
+# Independence sampler
+x_indep = Metropolis_Hastings(n, J, π, x0, q_indep, q_indep_sampler)
 
-# # Independence sampler with uniform proposal
-# g = (1/N) * np.ones(N)
-# q_indep = lambda x, y: g[y]
-# α_indep = lambda x, y: min(1, π[y]*g[x] / (π[x]*g[y]))
-# p_indep = transition(q_indep, α_indep)
+# Three values of δ
+δ1, δ2, δ3 = .01, .1, 1
+x_rwmh_2 = Metropolis_Hastings(n, J, π, x0, q_rwmh(δ2), q_rwmh_sampler(δ2))
+x_rwmh_3 = Metropolis_Hastings(n, J, π, x0, q_rwmh(δ3), q_rwmh_sampler(δ3))
 
+def anim_pdf(x, n_steps, step):
 
-# values = np.zeros((N,))
-# values[0] = 1
-# labels = {j: v for j, v in enumerate(values)}
+    def plot_pdf(i):
+        ax.clear()
+        ax.set_title("Probability density function at iteration ${}$".format(i))
+        ax.set_xlabel("$x$")
+        L, N = 4, 200
+        x_plot = np.linspace(-L, L, N)
+        ax.plot(x_plot, π(x_plot) / Z, label="Target distribution")
+        ax.hist(x[i], bins=20, density=True, label="Metropolis-Hastings runs")
+        ax.set_ylim(0, 0.7)
+        ax.set_xlim(-4, 4)
+        ax.legend(loc="upper right")
+        # time.sleep(1)
 
-# fig, ax = plt.subplots()
-# ax.set_xlim(-1.2, 1.2)
-# ax.set_xlim(-1.2, 1.2)
-# ax.set_aspect('equal')
-# cmap = matplotlib.cm.get_cmap('viridis')
-# nx.draw_networkx_labels(G, pos, labels=labels, font_size=16, ax=ax)
-# nx.draw(G, pos, node_color=values, alpha=.5, node_size=3000,
-#         # connectionstyle='arc3, rad=0.1',
-#         ax=ax, cmap=cmap)
-# plt.show()
+    mpl.rc('figure', figsize=(12, 8))
+    fig, ax = plt.subplots()
+    fig.subplots_adjust(left=.1, bottom=.1, right=.98, top=.95)
+    iterate = lambda i: plot_pdf(i)
+    anim = animation.FuncAnimation(fig, iterate, np.arange(0, n_steps, step),
+                                   interval=600, init_func=lambda: None, repeat=True)
+    plt.close(fig)
+    return anim
+# -
+# ## Independence sampler
+
+# +
+anim_pdf(x_indep, 20, 1)
+# -
+# ## RWMH with $\delta = 1$
+
+# +
+anim_pdf(x_rwmh_3, 40, 1)
+# -
+# ## RWMH with $\delta = .1$
+
+# +
+anim_pdf(x_rwmh_2, n, 20)
+# -
+# ## Long trajectories
+
+# +
+# Number of particles
+J = 1
+
+# Number of steps
+n = 2 * 10**4
+
+# Independence sampler
+x_indep = Metropolis_Hastings(n, J, π, x0, q_indep, q_indep_sampler)
+
+# Three values of δ
+x_rwmh_1 = Metropolis_Hastings(n, J, π, x0, q_rwmh(δ1), q_rwmh_sampler(δ1))[:, 0]
+x_rwmh_2 = Metropolis_Hastings(n, J, π, x0, q_rwmh(δ2), q_rwmh_sampler(δ2))[:, 0]
+x_rwmh_3 = Metropolis_Hastings(n, J, π, x0, q_rwmh(δ3), q_rwmh_sampler(δ3))[:, 0]
+
+fig, ax = plt.subplots()
+t = np.arange(n + 1)
+ax.plot(t, x_indep[:, 0])
+ax.set_title("Independence sampler")
+ax.set_xlabel("$n$")
+plt.show()
+# -
+
+# +
+fig, ax = plt.subplots()
+t = np.arange(n + 1)
+ax.plot(t, x_rwmh_3, label=r"$\delta = {}".format(δ3))
+ax.plot(t, x_rwmh_2, label=r"$\delta = {}".format(δ2))
+ax.plot(t, x_rwmh_1, label=r"$\delta = {}".format(δ1))
+ax.set_title("Random walk Metropolis-Hastings")
+ax.set_xlabel("$n$")
+plt.show()
+# -
