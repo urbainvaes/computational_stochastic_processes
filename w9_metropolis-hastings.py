@@ -84,7 +84,7 @@ x_rwmh = Metropolis_Hastings(n, J, π, x0, q_rwmh, q_rwmh_sampler)
 x_indep = Metropolis_Hastings(n, J, π, x0, q_indep, q_indep_sampler)
 
 def anim_pmf(x, n_steps=n):
-    def plot_pmf(i, x, π):
+    def plot_pmf(i):
         ax.clear()
         ax.set_title("Probability mass function at iteration ${}$".format(i))
         ax.set_xlabel("Node index")
@@ -101,7 +101,7 @@ def anim_pmf(x, n_steps=n):
     mpl.rc('figure', figsize=(12, 8))
     fig, ax = plt.subplots()
     fig.subplots_adjust(left=.1, bottom=.1, right=.98, top=.95)
-    iterate = lambda i: plot_pmf(i, x, π)
+    iterate = lambda i: plot_pmf(i)
     anim = animation.FuncAnimation(fig, iterate, np.arange(n_steps), interval=600,
                                    init_func=lambda: None, repeat=True)
 
@@ -141,26 +141,66 @@ anim_pmf(x_rwmh)
 # # Markov chain Monte Carlo
 # So far, we checked only that the Metropolis-Hastings algorithm produces a
 # Markov chain whose associated PMF converges to the target distribution as the discrete time tends to infinity,
-# indicating that the method is suitable for sampling: regardless of $X_0$, for large time n the iterate $X_n$ is approximately distributed according to $\pi$.
+# indicating that the method is suitable for sampling: regardless of $X_0$,
+# for a sufficiently large time n the iterate $X_n$ is approximately distributed according to $\pi$.
 #
 # Now we will examine whether the Markov chain can be used to estimate $I := \mathbb E_{X \sim \pi} [f(X)]$ based on one long trajectory.
-# Since we are in a finite state space $S := \{0, \dotsc, N-1\}$,
+# Since $S := \{0, \dotsc, N-1\}$ is a finite state space,
 # any function on $S$ can be decomposed as $f(x) = \sum_{i=0}^{N-1} f(i) \, \delta_i(x)$,
-# i.e.\ as a linear combination of indicator function.
-# Below we estimate $I_i:= \mathbb E_{X \sim \pi} [\delta_i(X)] = \mathbb P_{X \sim \pi} [X = i]$ for $i = 0, \dotsc, N-1$
-# using the Markov chain Monte Carlo method.
+# i.e. as a linear combination of indicator functions.
+# This is why, in the Monte Carlo simulations below,
+# we estimate
+# $$
+# \mathbb E_{X \sim \pi} [\delta_i(X)] = \mathbb P_{X \sim \pi} [X = i] = \pi(i), \qquad i = 0, \dotsc, N-1.
+# $$
 
+# +
+# Here we use only one trajectory, but a long one
+J, n = 1, 2*10**4
 
-# Size of discrete state space
-# N = 24
-#
-# # Desired stationary distribution
-# S = np.arange(N, dtype=int)
-# π = 1/N * (1 + .5 * np.sin(2*np.pi*(S/N)))
-#
-# # Verify that π is a pmf:
-# assert abs(np.sum(π) - 1) < 1e-15
-#
+# Metropolis-Hastings
+x_rwmh = Metropolis_Hastings(n, J, π, x0, q_rwmh, q_rwmh_sampler)
+x_indep = Metropolis_Hastings(n, J, π, x0, q_indep, q_indep_sampler)
+
+def anim_averages(x, n_steps=100):
+    def plot_averages(i):
+        ax.clear()
+        ax.set_title("Time averages of $\delta_i$ based on {} iterations".format(i))
+        ax.set_xlabel("$i$")
+        x_plot, y_plot = np.unique(x[:i, 0], return_counts=True)
+        ax.stem(x_plot - .05, y_plot/i, use_line_collection=True,
+                label="Time averages", linefmt='C0-', markerfmt='C0o')
+        x_plot = np.arange(N)
+        ax.stem(x_plot + .05, π(x_plot), use_line_collection=True,
+                label="Target distribution", linefmt='C1-', markerfmt='C1o')
+        ax.set_ylim(0, 0.2)
+        ax.legend(loc="upper right")
+        # time.sleep(1)
+
+    mpl.rc('figure', figsize=(12, 8))
+    fig, ax = plt.subplots()
+    fig.subplots_adjust(left=.1, bottom=.1, right=.98, top=.95)
+    iterate = lambda i: plot_averages(i)
+    anim = animation.FuncAnimation(fig, iterate, np.arange(1, n, n // n_steps),
+                                   interval=600, init_func=lambda: None, repeat=True)
+
+    # For Python
+    plt.show()
+
+    # For notebook
+    # plt.close(fig)
+    # return anim
+
+# +
+anim_averages(x_indep, n_steps=20)
+# -
+
+# +
+anim_averages(x_rwmh, n_steps=20)
+# -
+
+# +
+
 # # T is the transition matrix
 # T = np.zeros((N, N))
 # for i in range(N):
@@ -212,54 +252,3 @@ anim_pmf(x_rwmh)
 #         # connectionstyle='arc3, rad=0.1',
 #         ax=ax, cmap=cmap)
 # plt.show()
-
-# # Number of iterations
-# n = 100
-
-# # Number of particles
-# J = 1000
-
-
-
-# # values[i] contains the number of particles at the nodes at iteration i
-# values = np.zeros((n + 1, N))
-# values[0, 0] = 1
-# exact = np.zeros((n + 1, N))
-# values[0] = [N, 0, 0, 0, 0]
-# exact[0] = [1, 0, 0, 0, 0]
-# tr = np.array(T)
-
-# # Simulation of the Markov chain
-# for i in range(n):
-#     for j, v in enumerate(T):
-#         proposal =
-#         for k in next_step:
-#             values[i+1][k] += 1
-#     exact[i+1] = tr.T.dot(exact[i])
-
-# def plot_evolution(i):
-#     ax.clear()
-#     add_edges_labels(ax)
-#     labels = {j: v for j, v in enumerate(values[i])}
-#     nx.draw_networkx_labels(G, pos, labels=labels, font_size=16, ax=ax)
-#     cmap = matplotlib.cm.get_cmap('viridis')
-#     nx.draw(G, pos, node_color=values[i], alpha=.5, node_size=3000,
-#             connectionstyle='arc3, rad=0.1', ax=ax, cmap=cmap)
-#     ax.set_title("Discrete time: ${}$".format(i))
-
-# def plot_pmf(i):
-#     ax.clear()
-#     ax.set_title("Probability mass function at iteration ${}$".format(i))
-#     ax.set_xlabel("Node index")
-#     ax.stem(np.arange(K) - .05, values[i]/N, use_line_collection=True,
-#             label="MC approximation", linefmt='C0-', markerfmt='C0o')
-#     ax.stem(np.arange(K) + .05, exact[i], use_line_collection=True,
-#             label="Exact", linefmt='C1-', markerfmt='C1o')
-#     ax.set_ylim(0, 1.1)
-#     ax.legend()
-
-# # For notebook
-# # plt.close(fig)
-# # return anim
-
-# # -
