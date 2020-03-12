@@ -7,20 +7,20 @@
 import numpy as np
 import scipy.stats
 import networkx as nx
-import matplotlib
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 # -
 
 # +
-matplotlib.rc('font', size=20)
-matplotlib.rc('font', family='serif')
-matplotlib.rc('figure', figsize=(16, 11))
-matplotlib.rc('lines', linewidth=2)
-matplotlib.rc('lines', markersize=12)
-matplotlib.rc('figure.subplot', hspace=.3)
-matplotlib.rc('figure.subplot', wspace=.1)
-matplotlib.rc('animation', html='html5')
+mpl.rc('font', size=20)
+mpl.rc('font', family='serif')
+mpl.rc('figure', figsize=(16, 11))
+mpl.rc('lines', linewidth=2)
+mpl.rc('lines', markersize=12)
+mpl.rc('figure.subplot', hspace=.3)
+mpl.rc('figure.subplot', wspace=.1)
+mpl.rc('animation', html='html5')
 np.random.seed(0)
 
 # T is the transition matrix
@@ -88,7 +88,7 @@ def run_tests(T, action='plot_evolution'):
         add_edges_labels(ax)
         labels = {j: v for j, v in enumerate(values[i])}
         nx.draw_networkx_labels(G, pos, labels=labels, font_size=16, ax=ax)
-        cmap = matplotlib.cm.get_cmap('viridis')
+        cmap = mpl.cm.get_cmap('viridis')
         nx.draw(G, pos, node_color=values[i], alpha=.5, node_size=3000,
                 connectionstyle='arc3, rad=0.1', ax=ax, cmap=cmap)
         ax.set_title("Discrete time: ${}$".format(i))
@@ -105,7 +105,7 @@ def run_tests(T, action='plot_evolution'):
         ax.legend()
 
     # Create animation
-    matplotlib.rc('figure', figsize=(12, 8))
+    mpl.rc('figure', figsize=(12, 8))
     fig, ax = plt.subplots()
     fig.subplots_adjust(left=.1, bottom=.1, right=.98, top=.95)
     iterate = plot_evolution if action == 'plot_evolution' else plot_pmf
