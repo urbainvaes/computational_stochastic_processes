@@ -143,7 +143,7 @@ anim_pmf(x_indep, n_steps=20)
 # +
 anim_pmf(x_rwmh)
 # -
-# ## Markov chain Monte Carlo
+# ## Calculating expectations
 # So far, we checked only that the Metropolis-Hastings algorithm produces a
 # Markov chain whose associated PMF converges to the target distribution as the discrete time tends to infinity,
 # indicating that the method is suitable for sampling: regardless of $X_0$,
@@ -316,9 +316,9 @@ plt.show()
 # +
 fig, ax = plt.subplots()
 t = np.arange(n + 1)
-ax.plot(t, x_rwmh_3, label=r"$\delta = {}".format(δ3))
-ax.plot(t, x_rwmh_2, label=r"$\delta = {}".format(δ2))
-ax.plot(t, x_rwmh_1, label=r"$\delta = {}".format(δ1))
+ax.plot(t, x_rwmh_3, label=r"$\delta = {}$".format(δ3))
+ax.plot(t, x_rwmh_2, label=r"$\delta = {}$".format(δ2))
+ax.plot(t, x_rwmh_1, label=r"$\delta = {}$".format(δ1))
 ax.set_title("Random walk Metropolis-Hastings")
 ax.set_xlabel("$n$")
 ax.legend()
