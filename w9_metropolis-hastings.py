@@ -321,5 +321,6 @@ ax.plot(t, x_rwmh_2, label=r"$\delta = {}".format(δ2))
 ax.plot(t, x_rwmh_1, label=r"$\delta = {}".format(δ1))
 ax.set_title("Random walk Metropolis-Hastings")
 ax.set_xlabel("$n$")
+ax.legend()
 plt.show()
 # -
