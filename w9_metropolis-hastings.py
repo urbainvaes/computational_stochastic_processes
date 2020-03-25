@@ -78,7 +78,7 @@ q_indep_sampler = lambda x: np.random.randint(0, N, size=len(x))
 
 # Random walk Metropolis-Hastings
 q_rwmh = lambda x, y: (1/2) * (y == (x + 1) % N) + (1/2) * (y == (x - 1) % N)
-q_rwmh_sampler = lambda x: (x + (1 - 2*np.random.randint(0, 2, size=J))) % N
+q_rwmh_sampler = lambda x: (x + (1 - 2*np.random.randint(0, 2, size=len(x)))) % N
 
 # Initial condition
 x0 = 0
