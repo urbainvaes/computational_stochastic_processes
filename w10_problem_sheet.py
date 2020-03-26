@@ -256,6 +256,7 @@ for σ in [.5, .6, .7, .8, .9]:
 # -
 # # Problem 6
 
+# +
 # This is a function frow w9
 def Metropolis_Hastings(n, J, π, x0, q, q_sampler):
     # x0: Initial condition
@@ -332,3 +333,98 @@ for x, π in (x_binomial, π_binomial), (x_geometric, π_geometric):
             label="Target distribution", linefmt='C1-', markerfmt='C1o')
     ax.legend(loc="upper right")
     plt.show()
+# -
+# # Problem 8
+
+# +
+def Barker(n, J, π, x0, q, q_sampler):
+    # x0: Initial condition
+    # n: Number of iterations
+    # J: Number of particles
+
+    # (Notice that, in fact, taking the minimum is not necessary)
+    α = lambda x, y: 1/(1 + π(x)*q(x, y)/(π(y)*q(y,x)))
+
+    # Vector with trajectories
+    x = np.zeros((n + 1, J), dtype=type(x0))
+
+    # Initial condition
+    x[0, :] = x[0, :] + x0
+
+    for i in range(n):
+        y = q_sampler(x[i])
+        u = np.random.rand(J)
+        x[i + 1] = np.where(u < α(x[i], y), y, x[i])
+
+    return x
+
+# Number of particles
+J = 1
+
+# Number of steps
+n = 10000
+
+π = lambda x: (1/np.sqrt(2*np.pi)) * np.exp(-x**2/2)
+
+# RWMH with Gaussian proposal
+δ = .6
+# Normalization not necessary
+q = lambda x, y: np.exp(-(x-y)**2/2/δ**2)
+q_sampler = lambda x: x + δ*np.random.randn(len(x))
+
+# Result
+args=(n, J, π, 0., q, q_sampler)
+xb, xmh = Barker(*args), Metropolis_Hastings(*args)
+
+# Plot of the empirical PDF based on only one path,
+# to check that the methods work.
+fig, ax = plt.subplots()
+ax.set_title("Comparison of the PDFs".format(len(x)))
+ax.set_xlabel("$x$")
+ax.hist(np.hstack((xmh, xb)), bins=20, density=True)
+x_plot = np.linspace(-4, 4, 200)
+ax.plot(x_plot, π(x_plot))
+plt.show()
+# -
+# ## Acceptance rate
+
+# +
+# Store xb and xmh as one-dimensional arrays, for convenience
+xb, xmh = xb[:,0], xmh[:,0]
+
+# Note that the lines below work because we are in the case of a continuous
+# state space. Indeed the probability that the proposal at step i is X[i] is
+# zero, so X[i+1] == X[i] indicates a rejection. In the case of a discrete
+# state space, there can be a strictly positive probability that a proposal is
+# equal X[i].
+n_rejected_b = np.sum(np.diff(xb) == 0)
+n_rejected_mh =  np.sum(np.diff(xmh) == 0)
+
+# The acceptance rate is higher for MH:
+print((n-n_rejected_b)/n, (n-n_rejected_mh)/n)
+# -
+# ## Effective sample size
+
+# +
+K = 1000
+
+gammas_mh = np.zeros(K)
+gammas_b = np.zeros(K)
+
+gammas_mh[0] = np.var(xmh)
+gammas_b[0] = np.var(xb)
+
+ymh = xmh - np.mean(xmh)
+yb = xb - np.mean(xb)
+
+for k in range(1, K):
+    gammas_mh[k] = np.mean(ymh[k:] * ymh[:-k])
+    gammas_b[k] = np.mean(yb[k:] * yb[:-k])
+
+rho_mh = gammas_mh / gammas_mh[0]
+rho_b = gammas_b / gammas_b[0]
+
+# Effective sample sizes
+print(n/(rho_mh[0] + 2*np.sum(rho_mh[1:])))
+print(n/(rho_b[0] + 2*np.sum(rho_b[1:])))
+# -
