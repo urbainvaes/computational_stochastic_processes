@@ -406,6 +406,9 @@ print((n-n_rejected_b)/n, (n-n_rejected_mh)/n)
 # ## Effective sample size
 
 # +
+# Truncation limit for the autocorrelation function. For large k, the
+# statistical error related to the calculation of ρ(k) based on one trajectory
+# becomes significant, so truncation helps.
 K = 1000
 
 gammas_mh = np.zeros(K)
@@ -427,4 +430,54 @@ rho_b = gammas_b / gammas_b[0]
 # Effective sample sizes
 print(n/(rho_mh[0] + 2*np.sum(rho_mh[1:])))
 print(n/(rho_b[0] + 2*np.sum(rho_b[1:])))
+# -
+# # Problem 10
+
+# +
+# We redefine the function in order to be able to deal with vector input.
+# We will only implement one replica.
+def Metropolis_Hastings(n, π, x0, q, q_sampler):
+    # x0: Initial condition
+    # n: Number of iterations
+
+    # (Notice that, in fact, taking the minimum is not necessary)
+    α = lambda x, y: np.minimum(1, π(y)*q(y, x) / (π(x)*q(x, y)))
+
+    # Vector with trajectories
+    x = np.zeros((n + 1, len(x0)))
+
+    # Initial condition
+    x[0] = x0
+
+    for i in range(n):
+        y = q_sampler(x[i])
+        u = np.random.rand(J)
+        x[i + 1] = np.where(u < α(x[i], y), y, x[i])
+
+    return x
+
+μ = np.array([3, 6])
+Σ = np.array([[2, .5], [.5, 1]])
+Σ_inv = np.linalg.inv(Σ)
+
+drif = lambda x: - Σ_inv.dot(x - μ)
+diff = lambda x: np.sqrt(2)
+
+def π(x):
+    # Normalization constant, not necessary
+    norm = (1/(2*np.pi*np.linalg.det(Σ)))
+    return np.exp(-Σ_inv.dot(x-μ).dot(x-μ)/2)
+    # In python, a.b.c is (a.b).c
+
+# Normalization not necessary
+δ = .1
+q = lambda x, y: np.exp(-np.linalg.norm(y - x - δ*drif(x))**2/(4*δ))
+q_sampler = lambda x: x + drif(x)*δ + diff(x)*np.sqrt(δ)*np.random.randn(2)
+
+# Number of steps
+n = 10000
+x_mala = Metropolis_Hastings(n, π, [0., 0.], q, q_sampler)
+
+print(np.mean(x_mala, axis=0))
+print(np.cov(x_mala.T))
 # -
