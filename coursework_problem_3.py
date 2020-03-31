@@ -6,10 +6,8 @@
 import numpy as np
 import sympy as sym
 import itertools
-import os
 import matplotlib
 import matplotlib.pyplot as plt
-import lib
 # -
 
 # +
@@ -17,7 +15,7 @@ matplotlib.rc('font', size=20)
 matplotlib.rc('font', family='serif')
 matplotlib.rc('text', usetex=True)
 matplotlib.rc('figure', figsize=(14, 8))
-matplotlib.rc('lines', linewidth=1)
+matplotlib.rc('lines', linewidth=2)
 matplotlib.rc('lines', marker='')
 matplotlib.rc('lines', markersize=10)
 # -
@@ -199,17 +197,69 @@ matplotlib.rc('lines', markersize=10)
 # $$
 
 # +
+# Parameters
 x0, μ, σ = 1, -1, 1
 
-# Time steps
-Δt = np.array([2**-i for i in range(4, 15)])
+# Finest mesh
+power_max, n_powers = 12, 8
+N = 2**power_max
+t = np.linspace(0, 1, N + 1)
 
 # Number of replicas
 M = 1000
 
+# Brownian motion on finest mesh
+Δt = t[1] - t[0]
+Δw = np.sqrt(Δt) * np.random.randn(N, M)
+w = np.vstack((np.zeros(M), np.cumsum(Δw, axis=0)))
 
-error = np.zeros(
+# Exact solution
+exact = x0*np.exp(μ*t + σ*w.T).T
 
-def stratonovich_integrator(t, w)
-    1 + μ*Δt + σ*
+# Second-order scheme
+def stratonovich_integrator(t, w):
+    x = np.zeros(w.shape)
+    x[0] = x0
+    dt, dw = t[1] - t[0], np.diff(w, axis=0)
+    for j in range(len(t) - 1):
+        factor = μ*dt + σ*dw[j] \
+                + (1/2) * μ**2 * dt**2 + μ*σ * dt*dw[j] + (1/2) * σ**2 * dw[j]**2 \
+                + (1/2) * μ*σ**2 * dt*dw[j]**2 + (1/6) * dw[j]**3 + (1/24) * dw[j]**4
+        x[j+1] = x[j] + x[j] * factor
+    return x
+
+# Calculate the numerical solution for several time steps
+xs = []
+for i in range(n_powers):
+    sol = stratonovich_integrator(t[::2**i], w[::2**i])
+    xs.append(sol)
+
+# Plot of some replicas
+fig, ax = plt.subplots()
+ax.plot(t, exact[:, 0], label=r"Exact solution")
+for i, x_i in enumerate(xs):
+    t_i, Δt_i = t[::2**i], Δt * 2**i
+    ax.plot(t_i, x_i[:, 0],
+            label=r"$\Delta t = 2^{{ {} }}$".format(np.log2(Δt_i)))
+ax.legend()
+ax.set_xlabel('$t$')
+plt.show()
+# -
+
+# +
+# Here we calculate the strong error at the final time only.
+# This is not the only possibility
+fig, ax = plt.subplots()
+Δts = [Δt * 2**i for i in range(n_powers)]
+errors = [np.mean(np.abs(x[-1] - exact[-1])) for x in xs]
+ax.loglog(Δts, errors, label="Strong error", ls="", marker='.')
+ax.set_xscale('log', basex=2)
+ax.set_yscale('log', basey=2)
+ax.set_xlabel('$\Delta t$')
+coeffs = np.polyfit(np.log2(Δts), np.log2(errors), 1)
+ax.plot(Δts, 2**coeffs[1] * (Δts)**coeffs[0],
+        label=r'${:.2f} \, \times \, \Delta t^{{ {:.2f} }}$'.
+        format(2**coeffs[1], coeffs[0]))
+ax.legend()
+plt.show()
 # -
