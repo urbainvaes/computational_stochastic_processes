@@ -7,7 +7,6 @@ import scipy.stats
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
-import matplotlib.animation as animation
 import scipy.interpolate
 import scipy.optimize
 import scipy.integrate
