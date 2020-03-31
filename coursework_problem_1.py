@@ -196,7 +196,7 @@ print(np.mean(x**2), np.mean(y**2))
 # Since $\xi_n$ takes the values -1 and 1 with equal probability.
 # \begin{align}
 # E &= \frac{1}{2} \log\left| \frac{1 + (1 - \theta) \, \mu \, \Delta t + \sigma \, \sqrt{\Delta t}}{1 - \theta \, \mu \, \Delta t} \right|
-# + \frac{1}{2} \log\left| \frac{1 + (1 - \theta) \, \mu \, \Delta t - \sigma \, \sqrt{\Delta t}}{1 - \theta \, \mu \, \Delta t} \right| \\
+#      + \frac{1}{2} \log\left| \frac{1 + (1 - \theta) \, \mu \, \Delta t - \sigma \, \sqrt{\Delta t}}{1 - \theta \, \mu \, \Delta t} \right| \\
 # &= \log\sqrt{\left| \frac{1 + (1 - \theta) \, \mu \, \Delta t + \sigma \, \sqrt{\Delta t}}{1 - \theta \, \mu \, \Delta t} \,
 # \times \frac{1 + (1 - \theta) \, \mu \, \Delta t - \sigma \, \sqrt{\Delta t}}{1 - \theta \, \mu \, \Delta t} \right|}
 # \end{align}
