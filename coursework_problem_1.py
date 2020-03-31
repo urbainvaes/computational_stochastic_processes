@@ -32,12 +32,14 @@ matplotlib.rc('figure.subplot', hspace=.1)
 # ## Question 1
 # Using the expression of the exact solution,
 # we calculate
-# \begin{align}
+# $$
+# \begin{aligned}
 # \expect [X_t \bar X_t]
 # &= \expect \left[ \exp \left( \left(\mu + \bar \mu - \frac{\sigma^2}{2} - \frac{\bar \sigma^2}{2}\right) t + (\sigma + \bar \sigma) \, W_t \right) \right] \\
 # &= \e^{\left(2\re(\mu) - \re(\sigma^2)\right) t} \, \expect \left[ \e^{2\re(\sigma) \, W_t} \right]
 # = \e^{\left(2\re(\mu) - \re(\sigma^2)\right) t} \, \e^{2|\re(\sigma)|^2 \, t}.
-# \end{align}
+# \end{aligned}
+# $$
 # Writing $\sigma = a + bi$, notice that $\re(\sigma^2) = a^2 - b^2$ and $|\re(\sigma)|^2 = a^2$.
 # We deduce
 # $$
@@ -47,31 +49,35 @@ matplotlib.rc('figure.subplot', hspace=.1)
 
 # ## Question 2
 # In the case of geometric Brownian motion, the $\theta$ Milstein scheme reads
-# \begin{align}
+# $$
 #     X^{\Delta t}_{n+1} =  X^{\Delta t}_n + \big( \theta \, \mu \, X^{\Delta t}_{n+1} + (1-\theta) \, \mu \, X^{\Delta t}_n \big) \, \Delta t
 #     + \sigma \, X^{\Delta t}_n \, \Delta W_n + \frac{1}{2} \sigma^2 \, X^{\Delta t}_n \big((\Delta W_n)^2 - \Delta t \big).
-# \end{align}
+# $$
 # Rearranging the terms, this gives
-# \begin{align}
+# $$
 #     X^{\Delta t}_{n+1} =  \frac{1 + (1-\theta) \, \mu \, \Delta t + \sigma \, \Delta W_n + \frac{1}{2} \sigma^2 \, \big((\Delta W_n)^2 - \Delta t \big)}{1 - \mu \, \Delta t \, \theta} \, X^{\Delta t}_n.
-# \end{align}
+# $$
 
 # Then, with the usual reasoning,
-# \begin{align}
+# $$
+# \begin{aligned}
 #     R(\Delta t, \mu, \sigma, \theta)
 # &= \expect \left|\frac{1 + (1-\theta) \, \mu \, \Delta t + \sigma \, \Delta W_n + \frac{1}{2} \sigma^2 \, \big((\Delta W_n)^2 - \Delta t \big)}{1 - \mu \, \Delta t \, \theta} \right|^2 \\
 # &= \frac{|1 + (1-\theta) \, \mu \, \Delta t|^2 + \expect \left[ \left(\sigma \, \Delta W_n + \frac{1}{2} \sigma^2 \, \big((\Delta W_n)^2 - \Delta t \big) \right)\left(\bar \sigma \, \Delta W_n + \frac{1}{2} \bar \sigma^2 \, \big((\Delta W_n)^2 - \Delta t \big) \right) \right]}{|1 - \mu \, \Delta t \, \theta|^2} \\
 # &= \frac{|1 + (1-\theta) \, \mu \, \Delta t|^2 + |\sigma|^2 \, \Delta t + \frac{1}{2} |\sigma|^4 \, \Delta t^2}{|1 - \mu \, \Delta t \, \theta|^2},
-# \end{align}
+# \end{aligned}
+# $$
 # where we used that $\expect[\Delta W_n^4] = 3 \Delta t^2$ and $\expect[\Delta W_n] = \expect [\Delta W_n^3] = 0$.
 
 # ## Question 3
 # In the case where $\mu$ and $\sigma$ are real,
 # the expression of $R$ simplifies to
-# \begin{align}
+# $$
+# \begin{aligned}
 #     R(\Delta t, \mu, \sigma, \theta)
 # &= \frac{(1 + (1-\theta) \, \mu \, \Delta t)^2 + \sigma^2 \, \Delta t + \frac{1}{2} \sigma^4 \, \Delta t^2}{(1 - \mu \, \Delta t \, \theta)^2}.
-# \end{align}
+# \end{aligned}
+# $$
 # The scheme is mean-square stable for geometric Brownian motion if and only if $R(\Delta t, \mu, \sigma, \theta) < 1$
 # or equivalently
 # $$
@@ -194,16 +200,18 @@ print(np.mean(x**2), np.mean(y**2))
 # $$
 # (See the lecture notes for more details).
 # Since $\xi_n$ takes the values -1 and 1 with equal probability.
-# \begin{align}
+# $$
+# \begin{aligned}
 # E &= \frac{1}{2} \log\left| \frac{1 + (1 - \theta) \, \mu \, \Delta t + \sigma \, \sqrt{\Delta t}}{1 - \theta \, \mu \, \Delta t} \right|
 #      + \frac{1}{2} \log\left| \frac{1 + (1 - \theta) \, \mu \, \Delta t - \sigma \, \sqrt{\Delta t}}{1 - \theta \, \mu \, \Delta t} \right| \\
 # &= \log\sqrt{\left| \frac{1 + (1 - \theta) \, \mu \, \Delta t + \sigma \, \sqrt{\Delta t}}{1 - \theta \, \mu \, \Delta t} \,
 # \times \frac{1 + (1 - \theta) \, \mu \, \Delta t - \sigma \, \sqrt{\Delta t}}{1 - \theta \, \mu \, \Delta t} \right|}
-# \end{align}
+# \end{aligned}
+# $$
 # Simplifying, we obtain
-# \begin{align}
-# E &= \log\sqrt{\frac{|1 + (1 - \theta) \, \mu \, \Delta t|^2 - \sigma^2 \,\Delta t}{|1 - \theta \, \mu \, \Delta t|^2}}
-# \end{align}
+# $$
+# E = \log\sqrt{\frac{|1 + (1 - \theta) \, \mu \, \Delta t|^2 - \sigma^2 \,\Delta t}{|1 - \theta \, \mu \, \Delta t|^2}}
+# $$
 # Therefore $E < 0$ if and only if
 # $$
 # \frac{|1 + (1 - \theta) \, \mu \, \Delta t|^2 - \sigma^2 \,\Delta t}{|1 - \theta \, \mu \, \Delta t|^2} < 1
