@@ -50,8 +50,8 @@ matplotlib.rc('figure.subplot', hspace=.1)
 # ## Question 2
 # In the case of geometric Brownian motion, the $\theta$ Milstein scheme reads
 # $$
-#     X^{\Delta t}_{n+1} =  X^{\Delta t}_n + \big( \theta \, \mu \, X^{\Delta t}_{n+1} + (1-\theta) \, \mu \, X^{\Delta t}_n \big) \, \Delta t
-#     + \sigma \, X^{\Delta t}_n \, \Delta W_n + \frac{1}{2} \sigma^2 \, X^{\Delta t}_n \big((\Delta W_n)^2 - \Delta t \big).
+# X^{\Delta t}_{n+1} =  X^{\Delta t}_n + \big( \theta \, \mu \, X^{\Delta t}_{n+1} + (1-\theta) \, \mu \, X^{\Delta t}_n \big) \, \Delta t +
+# \sigma \, X^{\Delta t}_n \, \Delta W_n + \frac{1}{2} \sigma^2 \, X^{\Delta t}_n \big((\Delta W_n)^2 - \Delta t \big).
 # $$
 # Rearranging the terms, this gives
 # $$
@@ -199,13 +199,13 @@ print(np.mean(x**2), np.mean(y**2))
 # E := \expect \left[ \log\left| \frac{1 + (1 - \theta) \, \mu \, \Delta t + \sigma \, \xi_n \, \sqrt{\Delta t}}{1 - \theta \, \mu \, \Delta t} \right| \right] < 0
 # $$
 # (See the lecture notes for more details).
-# Since $\xi_n$ takes the values -1 and 1 with equal probability.
+# Since $\xi_n$ takes the values -1 and 1 with equal probability,
 # $$
 # \begin{aligned}
-# E &= \frac{1}{2} \log\left| \frac{1 + (1 - \theta) \, \mu \, \Delta t + \sigma \, \sqrt{\Delta t}}{1 - \theta \, \mu \, \Delta t} \right|
-#      + \frac{1}{2} \log\left| \frac{1 + (1 - \theta) \, \mu \, \Delta t - \sigma \, \sqrt{\Delta t}}{1 - \theta \, \mu \, \Delta t} \right| \\
+# E &= \frac{1}{2} \log\left| \frac{1 + (1 - \theta) \, \mu \, \Delta t + \sigma \, \sqrt{\Delta t}}{1 - \theta \, \mu \, \Delta t} \right| +
+# \frac{1}{2} \log\left| \frac{1 + (1 - \theta) \, \mu \, \Delta t - \sigma \, \sqrt{\Delta t}}{1 - \theta \, \mu \, \Delta t} \right| \\
 # &= \log\sqrt{\left| \frac{1 + (1 - \theta) \, \mu \, \Delta t + \sigma \, \sqrt{\Delta t}}{1 - \theta \, \mu \, \Delta t} \,
-# \times \frac{1 + (1 - \theta) \, \mu \, \Delta t - \sigma \, \sqrt{\Delta t}}{1 - \theta \, \mu \, \Delta t} \right|}
+# \times \frac{1 + (1 - \theta) \, \mu \, \Delta t - \sigma \, \sqrt{\Delta t}}{1 - \theta \, \mu \, \Delta t} \right|}.
 # \end{aligned}
 # $$
 # Simplifying, we obtain
