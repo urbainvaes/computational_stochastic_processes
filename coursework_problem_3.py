@@ -197,6 +197,8 @@ np.random.seed(0)
 # \end{aligned}
 # $$
 
+## Question 6
+
 # +
 # Parameters
 x0, μ, σ = 1, -1, 1
@@ -264,3 +266,16 @@ ax.plot(Δts, 2**coeffs[1] * (Δts)**coeffs[0],
 ax.legend()
 plt.show()
 # -
+
+# ## Question 7
+# The scheme can be guessed by Taylor expansion.
+# Noticing that the exact solution satisfies
+# $$
+# X_{(n+1)\Delta t} = X_{n\Delta t} \, \e^{\mu \Delta t + \sigma \Delta W_n},
+# $$
+# and Taylor-expanding the right-hand side, we obtain
+# $$
+# X_{(n+1)\Delta t} = X_{n\Delta} \left(1 + (\mu \Delta t + \sigma \Delta W_n) + \frac{1}{2}(\mu \Delta t + \sigma \Delta W_n)^2 + \dots \right).
+# $$
+# Including terms up to order 4 and keeping only the terms that scale as $\Delta t^2$ or less (using the fact that $\Delta W_n = \mathcal O(\Delta t^{1/2})$),
+# the scheme is obtained.
