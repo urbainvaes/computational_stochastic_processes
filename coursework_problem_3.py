@@ -18,6 +18,7 @@ matplotlib.rc('figure', figsize=(14, 8))
 matplotlib.rc('lines', linewidth=2)
 matplotlib.rc('lines', marker='')
 matplotlib.rc('lines', markersize=10)
+np.random.seed(0)
 # -
 # # Problem 3
 
