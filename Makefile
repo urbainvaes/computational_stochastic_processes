@@ -1,4 +1,7 @@
-PYTHON_SCRIPTS := $(wildcard w*.py) coursework_problem_1.py coursework_problem_2.py
+PYTHON_SCRIPTS := $(wildcard w*.py) \
+    coursework_problem_1.py \
+    coursework_problem_2.py \
+    coursework_problem_3.py
 IPYNB_OUTPUTS := $(PYTHON_SCRIPTS:.py=.ipynb)
 HTML_OUTPUTS := $(PYTHON_SCRIPTS:.py=.html)
 CSS := .jupyter/custom/custom.css
