@@ -112,7 +112,7 @@ np.random.seed(0)
 # $$
 # X_{(n+1) \, \Delta t} = \mu + a(\Delta t) \, (X_{n\Delta t} - \mu) + b(\Delta t) \, \xi \qquad \text{in law,}
 # $$
-# where $\xi \sim \mathcal N(0, 1)$, $a(\Delta t) = \e^{-2 \theta \Delta t}$ and $b(\Delta t) = \sqrt{\frac{1}{2 \theta} \, (1 - \e^{-2 \theta \Delta t})}$.
+# where $\xi \sim \mathcal N(0, 1)$, $a(\Delta t) = \e^{-2 \theta \Delta t}$ and $b(\Delta t) = \sqrt{\frac{\sigma^2}{2 \theta} \, (1 - \e^{-2 \theta \Delta t})}$.
 # This suggests the numerical scheme
 # $$
 # X^{\Delta t}_{n+1} = \mu + a(\Delta t) \, (X^{\Delta t}_{n} - \mu) + b(\Delta t) \, \xi.
