@@ -84,7 +84,7 @@ np.random.seed(0)
 # \d Y_t = X_1(t) \, \d X_2(t) + X_2(t) \, \d X_1(t) = (t - s) \circ \d W_t + (W_t - W_s) \, \d t.
 # $$
 # (The expression in the middle here is only formal.)
-# Integrating between $0$ and $t$, we deduce
+# Integrating between $s$ and $t$, we deduce
 # $$
 # Y_t - Y_s = \int_s^t (t - s) \circ \d W_t + \int_s^t (W_t - W_s) \, \d t.
 # $$
@@ -109,7 +109,7 @@ np.random.seed(0)
 # $$
 # \d Y_t = (J^{s,t}_{(0, 1)} + J^{s,t}_{(1, 0)}) \, \circ \d W_t + J^{s,t}_{(1,1)} \, \d t.
 # $$
-# Integrating between $0$ and $t$, we deduce
+# Integrating between $s$ and $t$, we deduce
 # $$
 # (t - s) \, J^{s,t}_{(1, 1)} = J^{s,t}_{(1, 0, 1)} + J^{s,t}_{(0, 1, 1)} + J^{s,t}_{(1, 1, 0)}.
 # $$

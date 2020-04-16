@@ -132,7 +132,7 @@ plt.show()
 # $$
 # \frac{1}{2} y^2 + y + \theta^2 - (1 + \theta)^2 < 0 \Leftrightarrow \frac{1}{2} y^2 + y - 1 - 2\theta < 0.
 # $$
-# Clearly, for $\theta \in [0, 1]$ there always exists $y < 0$ such that the left-hand side is positive.
+# Clearly, for $\theta \in [0, 1]$ there always exists $y > 0$ close to 2 such that the left-hand side is positive.
 # Therefore, there is no choice of $\theta$ for which the scheme is A-stable.
 # If we had not restricted our attention to the interval $\theta \in [0, 1]$,
 # then we would have noticed that the scheme is mean-square stable for $\theta \geq 3/2$.
