@@ -85,7 +85,8 @@ matplotlib.rc('figure.subplot', hspace=.1)
 # $$
 # Letting $x := \mu \, \Delta t$ and $y = \sigma^2 \, \Delta t$ and rearranging, this reads
 # $$
-# \frac{1}{2} y^2 + y + (1 + (1-\theta) \, x)^2 - (1 - x \, \theta)^2 < 0.
+# \frac{1}{2} y^2 + y + (1 + (1-\theta) \, x)^2 - (1 - x \, \theta)^2 < 0
+# \Leftrightarrow \frac{1}{2} y^2 + y + 2(1-\theta)x + x^2 < 0.
 # $$
 # For fixed $\theta$ and fixed $x$, this is a quadratic polynomial in $y$ of the form $p(y) := a y^2 + b y + c$.
 # Since $a > 0$ this polynomial tends to $+ \infty$ as $|y| \to \infty$.
