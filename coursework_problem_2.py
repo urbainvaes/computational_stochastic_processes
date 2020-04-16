@@ -48,6 +48,13 @@ np.random.seed(0)
 # $$
 # X_t = \mu + (X_0 - \mu) \, \e^{-\theta \, t} + \sigma \, \int_0^t \e^{-\theta(t - s)} \, \d W_s.
 # $$
+# By Itô's isometry, the second moment at the final time is given by
+# $$
+# \begin{aligned}
+# \expect |X_T|^2 &= |\expect[X_T]|^2 + \var[X_T] = |\mu + (\expect[X_0] - \mu) \, \e^{-\theta \, t}|^2 + \var[X_0] \, \e^{-2 \theta t} + \sigma^2 \, \int_0^T \e^{-2 \theta(T - s)} \, \d s \\
+#                 &= \left|-1 + 2.5 \e^{-1} \right|^2 + \frac{1}{12} \, \e^{-2} + (1 - \e^{-2}) = 0.882...
+# \end{aligned}
+# $$
 
 # ## Question 2
 # Since
@@ -64,7 +71,7 @@ np.random.seed(0)
 
 # On the other-hand,
 # $$
-# I_N = \sum_{k=0}^{N-1} f(k \Delta_N) \, (W_{(k+1) \Delta_n} - W_{k \Delta_n}).
+# I_N = \sum_{k=0}^{N-1} f(k \Delta_N) \, (W_{(k+1) \Delta_N} - W_{k \Delta_N}).
 # $$
 # Since the right-hand side is a sum of independent normally distributed random variables,
 # for any $N$ the integral $I_N$ is a normally distributed random variable.

@@ -8,7 +8,6 @@ import scipy.optimize
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
-import matplotlib.animation as animation
 # -
 
 # +
@@ -18,7 +17,6 @@ matplotlib.rc('figure', figsize=(13, 8))
 matplotlib.rc('lines', linewidth=2)
 matplotlib.rc('lines', markersize=12)
 matplotlib.rc('figure.subplot', hspace=.1)
-matplotlib.rc('animation', html='html5')
 np.random.seed(0)
 # -
 # # Problem 2
