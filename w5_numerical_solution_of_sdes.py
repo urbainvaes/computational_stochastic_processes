@@ -211,7 +211,7 @@ def plot_errors(Δts, errors, error_type, method):
     fig, ax = plt.subplots()
     ax.set_title("{} error of the {} scheme".format(error_type, method))
     if error_type == "Strong":
-        ylabel = r"$\mathbb E \left[ \sup \{ |X^{\Delta t}_n  - X_{n \Delta t}|:" \
+        ylabel = r"$E \left[ \sup \{ |X^{\Delta t}_n  - X_{n \Delta t}|:" \
                 + "n \Delta t \in [0, T] \} \right]$"
     elif error_type == "Weak":
         ylabel = r"$|E[f(X^{\Delta t}_{T/\Delta t}] - E[f(X_t)] |$"
