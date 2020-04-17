@@ -226,7 +226,7 @@ def log_likelihood(x, θ, include_prior):
     logL = - N*np.log(b) - np.sum((μ + a*(x[:-1] - μ) - x[1:])**2)/2/b**2
 
     # Contribution of the prior
-    prior_contribution = (θ - 2)**2/2
+    prior_contribution = - (θ - 2)**2/2
 
     return logL + include_prior*prior_contribution
 
@@ -245,8 +245,8 @@ fsolve = scipy.integrate.solve_ivp
 fzeros = scipy.optimize.brentq
 
 # ML and MAP estimators
-θmle = fmin(lambda θ: - log_likelihood(x, θ, True), θmin, θmax)
-θmap = fmin(lambda θ: - log_likelihood(x, θ, False), θmin, θmax)
+θmle = fmin(lambda θ: - log_likelihood(x, θ, False), θmin, θmax)
+θmap = fmin(lambda θ: - log_likelihood(x, θ, True), θmin, θmax)
 print(θmle, θmap)
 # -
 # ## Question 8
