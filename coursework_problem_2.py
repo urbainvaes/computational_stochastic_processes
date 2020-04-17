@@ -189,7 +189,7 @@ print("99% confidence interval: [{}, {}]".format(left_99, right_99))
 fix, ax = plt.subplots()
 t = np.linspace(0, N*Δt, N + 1)
 ax.plot(t, x[:, :20])
-ax.set_xlabel('$x$')
+ax.set_xlabel('$t$')
 plt.show()
 # -
 # ## Question 5
