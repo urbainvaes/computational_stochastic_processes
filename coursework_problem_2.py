@@ -197,7 +197,7 @@ plt.show()
 # is Gaussian with mean $\mu + a(\Delta t) \, (X^{\Delta t}_n - \mu)$ and variance $|b(\Delta t)|^2$.
 # Therefore
 # $$
-# f_{\hat X} (x_{0}, \dotsc, x_{N} \, | \, \vartheta) = I_{[1, 2]}(x_{0}) \, \left(\frac{1}{\sqrt{2 \pi \, |b(\Delta t)|^2}}\right)^N \, \prod_{k=0}^{N-1} \exp \left(- \frac{\left(\mu + a(\Delta t) \, (x_k - \mu) - x_{k+1}\right)^2}{2 \, |b(\Delta t)|^2}\right),
+# f_{\hat X} (x_{0}, \dotsc, x_{N} \, ; \, \vartheta) = I_{[1, 2]}(x_{0}) \, \left(\frac{1}{\sqrt{2 \pi \, |b(\Delta t)|^2}}\right)^N \, \prod_{k=0}^{N-1} \exp \left(- \frac{\left(\mu + a(\Delta t) \, (x_k - \mu) - x_{k+1}\right)^2}{2 \, |b(\Delta t)|^2}\right),
 # $$
 # where in fact, on the right-hand side $a(\Delta t) = a(\Delta t; \vartheta)$ and $b(\Delta t) = b(\Delta t; \vartheta)$,
 # but we do not write this explicitly, in order to keep the notations concise.
