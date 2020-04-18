@@ -211,11 +211,9 @@ print(np.mean(x**2), np.mean(y**2))
 # $$
 # Simplifying, we obtain
 # $$
-# E = \log\sqrt{\frac{|1 + (1 - \theta) \, \mu \, \Delta t|^2 - \sigma^2 \,\Delta t}{|1 - \theta \, \mu \, \Delta t|^2}}
+# E = \log\sqrt{\frac{|(1 + (1 - \theta) \, \mu \, \Delta t)^2 - \sigma^2 \,\Delta t|}{(1 - \theta \, \mu \, \Delta t)^2}}
 # $$
 # Therefore $E < 0$ if and only if
 # $$
-# \frac{|1 + (1 - \theta) \, \mu \, \Delta t|^2 - \sigma^2 \,\Delta t}{|1 - \theta \, \mu \, \Delta t|^2} < 1
-# \Leftrightarrow (1 - 2 \theta) \mu^2 \Delta t^2 + 2 \mu \Delta t - \sigma^2 \Delta t < 0.
+# \frac{|(1 + (1 - \theta) \, \mu \, \Delta t)^2 - \sigma^2 \,\Delta t|}{(1 - \theta \, \mu \, \Delta t)^2} < 1.
 # $$
-# When $\theta = 1/2$, this condition coincides with the condition of asymptotic stability of the continuous equation.
