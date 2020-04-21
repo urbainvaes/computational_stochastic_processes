@@ -278,7 +278,7 @@ plt.show()
 # Differentiating both sides with respect to $t$ and using the previous equation,
 # we obtain
 # $$
-#    \, - \theta \int_0^t e^{-\theta (t - s)} \, \phi_n(s) \, \d s + \theta \int_t^T e^{-\theta (s - t)} \, \phi_n(s) \, \d s - \theta \int_0^T e^{-\theta (s + t)} \, \phi_n(s) \, \d s  = \frac{2 \, \theta \, \lambda_n}{\sigma^2} \, \phi_n'(t),
+#    \, - \theta \int_0^t e^{-\theta (t - s)} \, \phi_n(s) \, \d s + \theta \int_t^T e^{-\theta (s - t)} \, \phi_n(s) \, \d s + \theta \int_0^T e^{-\theta (s + t)} \, \phi_n(s) \, \d s  = \frac{2 \, \theta \, \lambda_n}{\sigma^2} \, \phi_n'(t),
 # $$
 # which implies $\phi_n'(T) = - \theta \, \phi_n(T)$.
 # Simplifying $\theta$,
