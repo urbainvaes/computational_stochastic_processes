@@ -287,17 +287,19 @@ plt.show()
 # $$
 # \frac{2 \,\theta^2 \, \lambda_n}{\sigma^2} \phi_n(t) - 2 \phi_n(t) = \frac{2 \, \lambda_n}{\sigma^2} \, \phi_n''(t) \Leftrightarrow  \phi_n''(t) = \left(\theta^2 - \frac{\sigma^2}{\lambda_n}\right) \, \phi_n(t).
 # $$
-# Let us assume first that $\alpha_n^2 = \theta^2 - \frac{\sigma^2}{\lambda_n}$ is positive.
-# Then, employing the boundary condition $\phi_n(0) = 0$,
-# solutions are of the form $\phi_n = \sinh (\alpha_n t)$,
-# and substituting in the second boundary condition, we find that the $\alpha_n$ satisfy:
+# Let us assume first that $k_n := \theta^2 - \frac{\sigma^2}{\lambda_n}$ is positive.
+# Then, letting $\alpha_n = \sqrt{\gamma_n}$ and employing the boundary condition $\phi_n(0) = 0$,
+# solutions are of the form $\phi_n = \sinh (\alpha_n t)$.
+# Substituting in the second boundary condition, we find that the $\alpha_n$ satisfy:
 # $$
 # \tanh(\alpha_n \, T) = - \frac{\alpha_n}{\theta}.
 # $$
 # Since both sides are even functions of $\alpha_n$,
 # and since the hyperbolic tangent is always positive when $\alpha_n > 0$,
 # we deduce that this equation does not admit a solution.
-# Solutions must therefore be of the type $\phi_n = \sin (\alpha_n t)$,
+# Therefore $k_n$ must be negative and,
+# with the notation $\alpha_n = \sqrt{-k_n}$,
+# solutions must be of the type $\phi_n = \sin (\alpha_n t)$,
 # where $\alpha_n$ solves:
 # $$
 # \tan(\alpha_n \, T) = - \frac{\alpha_n}{\theta}.
